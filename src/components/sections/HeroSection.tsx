@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Play } from 'lucide-react'
 import Image from 'next/image'
 
 export default function HeroSection() {
@@ -48,16 +47,6 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          {/* ON AIR Badge */}
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 rounded-full mb-6"
-            animate={{ opacity: [1, 0.7, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-            <span className="text-white text-xs font-bold tracking-widest">EN VIVO</span>
-          </motion.div>
-
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white mb-4 leading-tight">
             Radio{' '}
             <span className="bg-gradient-to-r from-[#FFD166] to-[#F5A623] bg-clip-text text-transparent">
@@ -87,50 +76,6 @@ export default function HeroSection() {
             </a>
           </div>
         </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <div className="w-6 h-10 border-2 border-white/40 rounded-full flex items-start justify-center p-1.5">
-            <motion.div
-              className="w-1.5 h-3 bg-white/60 rounded-full"
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            />
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Video Thumbnail Overlay - Simulated Video */}
-      <div className="absolute bottom-0 left-0 right-0 z-[2]">
-        <div className="max-w-7xl mx-auto px-4 pb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.8 }}
-            className="relative rounded-2xl overflow-hidden shadow-2xl max-w-4xl mx-auto group cursor-pointer"
-          >
-            <Image
-              src="/images/hero-video-thumb.png"
-              alt="Programa en vivo"
-              width={1344}
-              height={768}
-              className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/20 transition-colors">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                <Play className="w-8 h-8 sm:w-10 sm:h-10 text-[#8B1A2B] fill-current ml-1" />
-              </div>
-            </div>
-            <div className="absolute bottom-4 left-4 flex items-center gap-2">
-              <span className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">EN VIVO</span>
-              <span className="px-3 py-1 bg-black/50 text-white text-xs rounded-full backdrop-blur-sm">Programa de la Mañana</span>
-            </div>
-          </motion.div>
-        </div>
       </div>
     </section>
   )
