@@ -1,59 +1,70 @@
 import { NextResponse } from 'next/server'
-import { checkConnection, getPosts, getRanking, getCategories } from '@/lib/wordpress'
+import { getPosts, getRanking, getProgramacion, checkWordPressConnection } from '@/lib/wordpress'
 
 export async function GET() {
   try {
-    // Verificar conexión con WordPress
-    const connection = await checkConnection()
+    // Check connection first
+    const connection = await checkWordPressConnection()
     
     if (!connection.connected) {
       return NextResponse.json({
         status: 'disconnected',
-        message: 'No se pudo conectar con WordPress',
         error: connection.error,
-        hint: 'Verifica que WordPress esté corriendo y la REST API esté habilitada en /wp-json/',
+        message: 'No se pudo conectar a WordPress. Verifica que XAMPP esté corriendo.',
+        config: {
+          apiUrl: process.env.WORDPRESS_API_URL,
+          siteUrl: process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL,
+        }
       }, { status: 503 })
     }
 
-    // Obtener datos de prueba
-    const [posts, ranking, categories] = await Promise.all([
-      getPosts(1, 5),
-      getRanking(4),
-      getCategories(),
+    // Fetch all data in parallel
+    const [posts, ranking, programacion] = await Promise.all([
+      getPosts(1, 4),
+      getRanking(10),
+      getProgramacion(),
     ])
 
     return NextResponse.json({
       status: 'connected',
-      siteName: connection.siteName,
-      data: {
-        posts: posts.length,
-        ranking: ranking.length,
-        categories: categories.length,
+      site: {
+        name: connection.siteName,
+        description: connection.siteDescription,
+        url: connection.url,
       },
-      sampleData: {
-        latestPosts: posts.map(p => ({
-          id: p.id,
-          title: p.title.rendered,
-          date: p.date,
-          slug: p.slug,
-        })),
-        ranking: ranking.map(r => ({
-          id: r.id,
-          position: r.acf?.posicion,
-          song: r.acf?.cancion,
-          artist: r.acf?.artista,
-        })),
-        categories: categories.map(c => ({
-          id: c.id,
-          name: c.name,
-          count: c.count,
-        })),
+      data: {
+        posts: {
+          count: posts.length,
+          items: posts.map(p => ({
+            id: p.id,
+            title: p.title.rendered,
+            slug: p.slug,
+            date: p.date,
+            excerpt: p.excerpt.rendered,
+            image: p._embedded?.['wp:featuredmedia']?.[0]?.source_url || null,
+          })),
+        },
+        ranking: {
+          count: ranking.length,
+          items: ranking.map(r => ({
+            id: r.id,
+            position: r.acf?.position || 0,
+            song: r.acf?.song || '',
+            artist: r.acf?.artist || '',
+            album: r.acf?.album || '',
+            weeks: r.acf?.weeks || 0,
+            trend: r.acf?.trend || 'same',
+          })),
+        },
+        programacion: {
+          count: programacion.length,
+          items: programacion,
+        },
       },
     })
   } catch (error) {
     return NextResponse.json({
       status: 'error',
-      message: 'Error interno del servidor',
       error: error instanceof Error ? error.message : 'Unknown error',
     }, { status: 500 })
   }
