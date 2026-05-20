@@ -357,7 +357,23 @@ function rmtv_enable_cors() {
         'http://127.0.0.1:3000',
     );
     
-    if ($origin && in_array($origin, $allowed_origins)) {
+    // En desarrollo, permitir cualquier origen que sea localhost o el dominio de preview
+    $allow = false;
+    if ($origin) {
+        if (in_array($origin, $allowed_origins)) {
+            $allow = true;
+        }
+        // Permitir dominios de preview (.space.chatglm.site, .space-z.ai)
+        if (preg_match('/\.space\.chatglm\.site$|\.space-z\.ai$|\.chatglm\.site$/', $origin)) {
+            $allow = true;
+        }
+        // Permitir cualquier localhost
+        if (preg_match('/^https?:\/\/localhost/', $origin)) {
+            $allow = true;
+        }
+    }
+    
+    if ($allow) {
         header('Access-Control-Allow-Origin: ' . esc_url_raw($origin));
         header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, Authorization');

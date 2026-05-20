@@ -37,7 +37,7 @@ export default function RankingSection() {
   useEffect(() => {
     async function fetchRanking() {
       try {
-        const res = await fetch(`${WP_API}/wp/v2/ranking?per_page=4&_embed=true`)
+        const res = await fetch(`${WP_API}/wp/v2/ranking?per_page=4&_embed=true&_t=${Date.now()}`, { cache: 'no-store' })
         if (!res.ok) return
         const data = await res.json()
         if (data && data.length > 0) {
