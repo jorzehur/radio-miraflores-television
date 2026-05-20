@@ -1,13 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Play, Radio } from 'lucide-react'
+import { Play } from 'lucide-react'
 import Image from 'next/image'
-import { useState } from 'react'
 
 export default function HeroSection() {
-  const [isPlaying, setIsPlaying] = useState(false)
-
   return (
     <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -75,30 +72,18 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {/* Play Button */}
-            <motion.button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="group flex items-center gap-3 px-8 py-4 bg-white rounded-full text-[#8B1A2B] font-bold text-lg shadow-2xl hover:shadow-white/25 transition-all duration-300 hover:scale-105"
-              whileTap={{ scale: 0.95 }}
-            >
-              {isPlaying ? (
-                <>
-                  <Radio className="w-5 h-5 group-hover:animate-spin" />
-                  Escuchando...
-                </>
-              ) : (
-                <>
-                  <Play className="w-5 h-5 fill-current" />
-                  Escuchar en Vivo
-                </>
-              )}
-            </motion.button>
-
             <a
               href="#ranking"
-              className="flex items-center gap-2 px-8 py-4 border-2 border-white/30 text-white rounded-full font-semibold text-lg hover:bg-white/10 transition-all duration-300 hover:scale-105"
+              className="flex items-center gap-2 px-8 py-4 bg-white rounded-full text-[#8B1A2B] font-bold text-lg shadow-2xl hover:shadow-white/25 transition-all duration-300 hover:scale-105"
             >
               Ver Ranking
+            </a>
+
+            <a
+              href="#noticias"
+              className="flex items-center gap-2 px-8 py-4 border-2 border-white/30 text-white rounded-full font-semibold text-lg hover:bg-white/10 transition-all duration-300 hover:scale-105"
+            >
+              Últimas Noticias
             </a>
           </div>
         </motion.div>
