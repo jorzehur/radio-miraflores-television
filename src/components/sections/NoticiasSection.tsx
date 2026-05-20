@@ -61,7 +61,10 @@ export default function NoticiasSection() {
   useEffect(() => {
     async function fetchNoticias() {
       try {
-        const res = await fetch(`${WP_API}/wp/v2/posts?per_page=2&_embed=true&_t=${Date.now()}`, { cache: 'no-store' })
+        const res = await fetch(`${WP_API}/wp/v2/posts?per_page=2&_embed=true&_t=${Date.now()}`, { 
+          cache: 'no-store',
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        })
         if (!res.ok) return
         const data = await res.json()
         if (data && data.length > 0) {

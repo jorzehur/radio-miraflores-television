@@ -357,7 +357,7 @@ function rmtv_enable_cors() {
         'http://127.0.0.1:3000',
     );
     
-    // En desarrollo, permitir cualquier origen que sea localhost o el dominio de preview
+    // En desarrollo, permitir cualquier origen necesario
     $allow = false;
     if ($origin) {
         if (in_array($origin, $allowed_origins)) {
@@ -371,12 +371,16 @@ function rmtv_enable_cors() {
         if (preg_match('/^https?:\/\/localhost/', $origin)) {
             $allow = true;
         }
+        // Permitir ngrok tunnels
+        if (preg_match('/\.ngrok-free\.dev$|\.ngrok\.io$|\.ngrok-free\.app$/', $origin)) {
+            $allow = true;
+        }
     }
     
     if ($allow) {
         header('Access-Control-Allow-Origin: ' . esc_url_raw($origin));
         header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, ngrok-skip-browser-warning');
         header('Access-Control-Allow-Credentials: true');
     }
     
