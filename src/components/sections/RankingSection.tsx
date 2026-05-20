@@ -19,7 +19,7 @@ const cardStyles = [
   { color: 'from-[#8B1A2B] to-[#A63346]', bgColor: 'bg-gradient-to-br from-[#FDF2F4] to-[#FCE7EB]', borderColor: 'border-[#FCE7EB]', icon: TrendingUp },
 ]
 
-const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost/word/wp-json'
+const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
 
 const containerVariants = {
   hidden: { opacity: 0 },

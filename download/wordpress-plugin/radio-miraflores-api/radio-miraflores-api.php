@@ -352,6 +352,12 @@ add_action('save_post', 'rmtv_save_programacion_meta');
 
 function rmtv_enable_cors() {
     $origin = get_http_origin();
+    
+    // Si no hay origin, intentar obtenerlo del header Referer o usar un default
+    if (empty($origin)) {
+        $origin = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+    }
+    
     $allowed_origins = array(
         'http://localhost:3000',
         'http://127.0.0.1:3000',
@@ -371,25 +377,42 @@ function rmtv_enable_cors() {
         if (preg_match('/^https?:\/\/localhost/', $origin)) {
             $allow = true;
         }
-        // Permitir ngrok tunnels
-        if (preg_match('/\.ngrok-free\.dev$|\.ngrok\.io$|\.ngrok-free\.app$/', $origin)) {
+        // Permitir ngrok tunnels (todos los subdominios)
+        if (preg_match('/\.ngrok-free\.dev$|\.ngrok\.io$|\.ngrok-free\.app$|\.ngrok\.app$/', $origin)) {
             $allow = true;
         }
     }
     
     if ($allow) {
         header('Access-Control-Allow-Origin: ' . esc_url_raw($origin));
-        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization, ngrok-skip-browser-warning');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, ngrok-skip-browser-warning, X-Requested-With');
         header('Access-Control-Allow-Credentials: true');
+        header('Access-Control-Max-Age: 86400');
     }
     
+    // Siempre responder a preflight OPTIONS
     if ('OPTIONS' === $_SERVER['REQUEST_METHOD']) {
         status_header(200);
         exit();
     }
 }
 add_action('rest_api_init', 'rmtv_enable_cors', 15);
+
+// También agregar CORS para solicitudes no-REST API
+function rmtv_enable_cors_all() {
+    $origin = get_http_origin();
+    if (empty($origin)) {
+        $origin = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+    }
+    
+    if ($origin && preg_match('/\.ngrok-free\.dev$|\.ngrok\.io$|\.ngrok-free\.app$|\.space\.chatglm\.site$|\.space-z\.ai$|localhost/', $origin)) {
+        header('Access-Control-Allow-Origin: ' . esc_url_raw($origin));
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, ngrok-skip-browser-warning');
+    }
+}
+add_action('send_headers', 'rmtv_enable_cors_all');
 
 // ============================================================
 // 5. DATOS DE EJEMPLO (Solo al activar el plugin)

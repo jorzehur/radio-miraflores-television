@@ -27,7 +27,18 @@ const fallbackNoticias = [
   },
 ]
 
-const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost/word/wp-json'
+const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
+const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word'
+
+/**
+ * Reemplazar URLs locales de WordPress por ngrok
+ */
+function replaceLocalUrl(url: string): string {
+  if (url && url.includes('localhost/word')) {
+    return url.replace(/http:\/\/localhost\/word/g, WP_SITE)
+  }
+  return url
+}
 
 function formatDate(dateStr: string): string {
   try {
@@ -73,7 +84,7 @@ export default function NoticiasSection() {
             title: p.title.rendered,
             date: p.date,
             excerpt: p.excerpt.rendered.replace(/<[^>]*>/g, '').substring(0, 200),
-            image: p._embedded?.['wp:featuredmedia']?.[0]?.source_url || null,
+            image: p._embedded?.['wp:featuredmedia']?.[0]?.source_url ? replaceLocalUrl(p._embedded['wp:featuredmedia'][0].source_url) : null,
           }))
           setNoticias(items)
           setIsFromWP(true)

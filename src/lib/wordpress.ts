@@ -9,8 +9,8 @@
  * - Fallback: Datos estáticos cuando WordPress no está disponible
  */
 
-const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost/word/wp-json'
-const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'http://localhost/word'
+const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
+const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word'
 
 // ============================================================
 // INTERFACES
@@ -88,6 +88,7 @@ async function clientFetch<T>(endpoint: string, params?: Record<string, string>)
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
       },
     })
     
@@ -157,13 +158,29 @@ export async function getProgramacion(): Promise<any[]> {
 
 export function getFeaturedImageUrl(post: WPPost): string {
   const media = post._embedded?.['wp:featuredmedia']?.[0]
-  if (media?.source_url) return media.source_url
+  if (media?.source_url) {
+    return replaceWpUrl(media.source_url)
+  }
   return '/images/hero-radio-studio.png'
 }
 
 export function getWpImageUrl(path: string): string {
-  if (path.startsWith('http')) return path
+  if (path.startsWith('http')) return replaceWpUrl(path)
   return `${WP_SITE}${path}`
+}
+
+/**
+ * Reemplazar URLs locales de WordPress por la URL de ngrok
+ * Esto es necesario porque WordPress devuelve URLs locales (http://localhost/word/...)
+ * pero necesitamos acceder a través de ngrok (https://purist-mongoose...ngrok-free.dev/word/...)
+ */
+const LOCAL_WP_URL = 'http://localhost/word'
+
+function replaceWpUrl(url: string): string {
+  if (url.includes('localhost/word') || url.includes('localhost%2Fword')) {
+    return url.replace(/http:\/\/localhost\/word/g, WP_SITE)
+  }
+  return url
 }
 
 /**
@@ -176,7 +193,12 @@ export async function checkWordPressConnection(): Promise<{
   url?: string
 }> {
   try {
-    const res = await fetch(WP_API, { method: 'GET' })
+    const res = await fetch(WP_API, { 
+      method: 'GET',
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    })
     if (!res.ok) return { connected: false }
     const data = await res.json()
     return {
