@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ThumbsUp, MessageCircle, Share2, Clock } from 'lucide-react'
+import { ThumbsUp, MessageCircle, Share2, Clock, ExternalLink } from 'lucide-react'
 
 interface NoticiaItem {
   id: number
@@ -16,6 +16,8 @@ interface NoticiaItem {
   likes?: number
   comments?: number
   shares?: number
+  hasFacebookEmbed?: boolean
+  facebookEmbedUrl?: string | null
 }
 
 const fallbackNoticias: NoticiaItem[] = [
@@ -64,16 +66,6 @@ function formatDate(dateStr: string): string {
   }
 }
 
-const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
-const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word'
-
-function replaceLocalUrl(url: string): string {
-  if (url && url.includes('localhost/word')) {
-    return url.replace(/http:\/\/localhost\/word/g, WP_SITE)
-  }
-  return url
-}
-
 export default function NoticiasSection() {
   const [noticias, setNoticias] = useState<NoticiaItem[]>(fallbackNoticias)
   const [isFromWP, setIsFromWP] = useState(false)
@@ -88,7 +80,7 @@ export default function NoticiasSection() {
         const timeout = setTimeout(() => controller.abort(), 8000)
 
         // Use local API route as proxy to avoid CORS issues with ngrok
-        const res = await fetch('/api/wp/posts?per_page=4', {
+        const res = await fetch('/api/wp/posts?per_page=6', {
           signal: controller.signal,
         })
 
@@ -99,22 +91,20 @@ export default function NoticiasSection() {
 
         if (!isMounted) return
         if (Array.isArray(data) && data.length > 0) {
-          // API route already transforms the data
-          // Filter out posts with empty titles
-          const items: NoticiaItem[] = data
-            .filter((post: any) => post.title && post.title.trim().length > 0)
-            .map((post: any) => ({
-              id: post.id,
-              title: post.title,
-              date: post.date,
-              excerpt: post.excerpt || '',
-              content: post.content?.replace(/<[^>]*>/g, '').trim().substring(0, 200) || '',
-              image: post.image || '/images/hero-radio-studio.png',
-              author: post.author || 'Radio Miraflores TV',
-              likes: Math.floor(Math.random() * 400) + 100,
-              comments: Math.floor(Math.random() * 100) + 10,
-              shares: Math.floor(Math.random() * 150) + 20,
-            }))
+          const items: NoticiaItem[] = data.map((post: any) => ({
+            id: post.id,
+            title: post.title || 'Publicación',
+            date: post.date,
+            excerpt: post.excerpt || '',
+            content: post.excerpt || '',
+            image: post.image || '/images/hero-radio-studio.png',
+            author: post.author || 'Radio Miraflores TV',
+            hasFacebookEmbed: post.hasFacebookEmbed || false,
+            facebookEmbedUrl: post.facebookEmbedUrl || null,
+            likes: Math.floor(Math.random() * 400) + 100,
+            comments: Math.floor(Math.random() * 100) + 10,
+            shares: Math.floor(Math.random() * 150) + 20,
+          }))
 
           if (items.length > 0) {
             setNoticias(items)
@@ -132,7 +122,7 @@ export default function NoticiasSection() {
     return () => { isMounted = false }
   }, [])
 
-  const displayNoticias = noticias.slice(0, 2)
+  const displayNoticias = noticias.slice(0, 4)
 
   return (
     <section id="noticias" className="py-20 md:py-28 bg-white">
@@ -166,6 +156,8 @@ export default function NoticiasSection() {
         <div className="space-y-6">
           {displayNoticias.map((noticia, index) => {
             const isWP = isFromWP
+            const isFacebookPost = noticia.hasFacebookEmbed
+
             return (
               <motion.div
                 key={noticia.id}
@@ -178,36 +170,96 @@ export default function NoticiasSection() {
                 {/* Header */}
                 <div className="p-4 pb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8B1A2B] to-[#A63346] flex items-center justify-center shadow-md">
-                      <span className="text-white font-bold text-sm">RM</span>
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-md ${
+                      isFacebookPost
+                        ? 'bg-gradient-to-br from-[#1877F2] to-[#0D65D9]'
+                        : 'bg-gradient-to-br from-[#8B1A2B] to-[#A63346]'
+                    }`}>
+                      {isFacebookPost ? (
+                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                      ) : (
+                        <span className="text-white font-bold text-sm">RM</span>
+                      )}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 text-sm">Radio Miraflores TV</h4>
+                      <h4 className="font-bold text-gray-900 text-sm">
+                        {isFacebookPost ? 'Radio Miraflores TV' : 'Radio Miraflores TV'}
+                      </h4>
                       <div className="flex items-center gap-1.5 text-gray-400 text-xs">
                         <Clock className="w-3 h-3" />
                         <span>{isWP && noticia.date ? formatDate(noticia.date) : noticia.time}</span>
+                        {isFacebookPost && (
+                          <>
+                            <span>·</span>
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Facebook</span>
+                          </>
+                        )}
                         <span>·</span><span>🌍</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="px-4 pb-3">
-                  <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {isWP ? (noticia.excerpt || noticia.content || '') : noticia.content}
-                  </p>
-                </div>
+                {/* Content - Text posts */}
+                {noticia.excerpt && !isFacebookPost && (
+                  <div className="px-4 pb-3">
+                    <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {noticia.excerpt || noticia.content}
+                    </p>
+                  </div>
+                )}
 
-                {/* Image */}
-                <div className="relative cursor-pointer group">
-                  <img
-                    src={noticia.image || '/images/hero-radio-studio.png'}
-                    alt={noticia.title}
-                    className="w-full h-56 sm:h-72 object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                  />
-                </div>
+                {/* Content - Facebook embed posts */}
+                {isFacebookPost && noticia.facebookEmbedUrl && (
+                  <div className="px-4 pb-3">
+                    <h3 className="text-gray-800 font-semibold text-base mb-3">{noticia.title}</h3>
+                    <div className="flex justify-center">
+                      <iframe
+                        src={noticia.facebookEmbedUrl}
+                        width="500"
+                        height="536"
+                        style={{ border: 'none', overflow: 'hidden', maxWidth: '100%' }}
+                        scrolling="no"
+                        frameBorder="0"
+                        allowFullScreen={true}
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                        className="rounded-lg"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Content - Facebook posts without embed URL (fallback) */}
+                {isFacebookPost && !noticia.facebookEmbedUrl && noticia.title && (
+                  <div className="px-4 pb-3">
+                    <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
+                    {noticia.excerpt && (
+                      <p className="text-gray-600 text-sm leading-relaxed">{noticia.excerpt}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Title-only for posts without excerpt (non-Facebook) */}
+                {!isFacebookPost && !noticia.excerpt && noticia.title && (
+                  <div className="px-4 pb-3">
+                    <h3 className="text-gray-800 font-semibold text-base">{noticia.title}</h3>
+                  </div>
+                )}
+
+                {/* Image - only show for non-Facebook posts */}
+                {!isFacebookPost && (
+                  <div className="relative cursor-pointer group">
+                    <img
+                      src={noticia.image || '/images/hero-radio-studio.png'}
+                      alt={noticia.title}
+                      className="w-full h-56 sm:h-72 object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                    />
+                  </div>
+                )}
 
                 {/* Reactions - only show for fallback data */}
                 {!isWP && (

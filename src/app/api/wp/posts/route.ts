@@ -6,7 +6,7 @@ const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'https://purist-mo
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const perPage = searchParams.get('per_page') || '4'
+    const perPage = searchParams.get('per_page') || '6'
     const page = searchParams.get('page') || '1'
 
     const controller = new AbortController()
@@ -30,13 +30,8 @@ export async function GET(request: Request) {
 
     const data = await res.json()
 
-    // Transform and filter posts data
+    // Transform posts data - include ALL posts (even those with Facebook embeds)
     const items = data
-      .filter((post: any) => {
-        // Filter out posts with empty titles
-        const title = post.title?.rendered?.replace(/<[^>]*>/g, '').trim() || ''
-        return title.length > 0
-      })
       .map((post: any) => {
         const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0]
         let imageUrl = '/images/hero-radio-studio.png'
@@ -44,10 +39,16 @@ export async function GET(request: Request) {
           imageUrl = replaceLocalUrl(featuredMedia.source_url)
         }
 
-        // Get clean excerpt - prefer excerpt, fall back to content
-        let excerpt = post.excerpt?.rendered?.replace(/<[^>]*>/g, '').trim() || ''
-        if (!excerpt) {
-          excerpt = post.content?.rendered?.replace(/<[^>]*>/g, '').substring(0, 200).trim() || ''
+        const contentHtml = post.content?.rendered || ''
+        const excerptHtml = post.excerpt?.rendered || ''
+
+        // Detect if content has Facebook embed
+        const hasFacebookEmbed = contentHtml.includes('facebook.com/plugins/post')
+
+        // Get clean text excerpt
+        let textExcerpt = excerptHtml.replace(/<[^>]*>/g, '').trim()
+        if (!textExcerpt) {
+          textExcerpt = contentHtml.replace(/<iframe[^>]*><\/iframe>/g, '').replace(/<[^>]*>/g, '').substring(0, 200).trim()
         }
 
         // Decode HTML entities in title
@@ -57,18 +58,35 @@ export async function GET(request: Request) {
           .replace(/&#8221;/g, '"')
           .replace(/&amp;/g, '&')
           .replace(/&#038;/g, '&')
+          .replace(/&#8211;/g, '–')
+          .replace(/&#8212;/g, '—')
+
+        // For Facebook embeds, extract the clean iframe URL
+        let facebookEmbedUrl = null
+        if (hasFacebookEmbed) {
+          const iframeMatch = contentHtml.match(/src="([^"]*facebook\.com\/plugins\/post\.php[^"]*)"/)
+          if (iframeMatch) {
+            facebookEmbedUrl = iframeMatch[1]
+              .replace(/&amp;/g, '&')
+              .replace(/&#038;/g, '&')
+          }
+        }
 
         return {
           id: post.id,
-          title,
+          title: title || 'Publicación de Facebook',
           slug: post.slug,
           date: post.date,
-          excerpt,
-          content: post.content?.rendered?.replace(/<[^>]*>/g, '').trim() || '',
+          excerpt: textExcerpt,
+          contentHtml,
+          hasFacebookEmbed,
+          facebookEmbedUrl,
           image: imageUrl,
           author: post._embedded?.author?.[0]?.name || 'Radio Miraflores TV',
         }
       })
+      // Filter out the default "Hello World" post
+      .filter((post: any) => post.slug !== 'hola-mundo')
 
     return NextResponse.json(items)
   } catch (error) {
