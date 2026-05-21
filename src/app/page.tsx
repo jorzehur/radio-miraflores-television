@@ -7,6 +7,7 @@ import TestimoniosSection from '@/components/sections/TestimoniosSection'
 import RedesSection from '@/components/sections/RedesSection'
 import InfoSection from '@/components/sections/InfoSection'
 import FooterSection from '@/components/sections/FooterSection'
+import AdminPanel from '@/components/AdminPanel'
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
         <InfoSection />
       </main>
       <FooterSection />
+      <AdminPanel />
     </div>
   )
 }
