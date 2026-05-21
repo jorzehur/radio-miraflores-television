@@ -61,9 +61,8 @@ export default function RankingSection() {
         const controller = new AbortController()
         const timeout = setTimeout(() => controller.abort(), 8000)
 
-        // Simple GET request - no custom headers to avoid CORS preflight
-        // The ngrok cookie (set when user visits the URL) handles the browser warning
-        const res = await fetch(`${WP_API}/wp/v2/ranking?per_page=10&_embed=true`, {
+        // Use local API route as proxy to avoid CORS issues with ngrok
+        const res = await fetch('/api/wp/ranking?per_page=10', {
           signal: controller.signal,
         })
 
@@ -74,21 +73,26 @@ export default function RankingSection() {
 
         if (!isMounted) return
         if (Array.isArray(data) && data.length > 0) {
+          // API route already transforms the data
           const items: RankingItem[] = data
             .map((item: any) => ({
               id: item.id,
-              position: item.meta?.position || 0,
-              song: item.meta?.song || item.title?.rendered || '',
-              artist: item.meta?.artist || '',
-              album: item.meta?.album || '',
-              weeks: item.meta?.weeks || 0,
-              trend: item.meta?.trend || 'same',
-              imageUrl: item.meta?.cover_image ? replaceLocalUrl(item.meta.cover_image) : null,
+              position: item.position || 0,
+              song: item.song || '',
+              artist: item.artist || '',
+              album: item.album || '',
+              weeks: item.weeks || 0,
+              trend: item.trend || 'same',
+              imageUrl: item.imageUrl ? replaceLocalUrl(item.imageUrl) : null,
             }))
             .sort((a: RankingItem, b: RankingItem) => a.position - b.position)
 
-          setRanking(items)
-          setIsFromWP(true)
+          // Only mark as WP if we have meaningful data (not all empty)
+          const hasData = items.some(i => i.song && i.song.length > 0)
+          if (hasData) {
+            setRanking(items)
+            setIsFromWP(true)
+          }
         }
       } catch {
         // Keep fallback data

@@ -30,26 +30,45 @@ export async function GET(request: Request) {
 
     const data = await res.json()
 
-    // Transform posts data
-    const items = data.map((post: any) => {
-      const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0]
-      let imageUrl = '/images/hero-radio-studio.png'
-      if (featuredMedia?.source_url) {
-        imageUrl = replaceLocalUrl(featuredMedia.source_url)
-      }
+    // Transform and filter posts data
+    const items = data
+      .filter((post: any) => {
+        // Filter out posts with empty titles
+        const title = post.title?.rendered?.replace(/<[^>]*>/g, '').trim() || ''
+        return title.length > 0
+      })
+      .map((post: any) => {
+        const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0]
+        let imageUrl = '/images/hero-radio-studio.png'
+        if (featuredMedia?.source_url) {
+          imageUrl = replaceLocalUrl(featuredMedia.source_url)
+        }
 
-      return {
-        id: post.id,
-        title: post.title.rendered,
-        slug: post.slug,
-        date: post.date,
-        excerpt: post.excerpt.rendered.replace(/<[^>]*>/g, '').trim() ||
-                 post.content.rendered.replace(/<[^>]*>/g, '').substring(0, 200).trim(),
-        content: post.content.rendered,
-        image: imageUrl,
-        author: post._embedded?.author?.[0]?.name || 'Radio Miraflores TV',
-      }
-    })
+        // Get clean excerpt - prefer excerpt, fall back to content
+        let excerpt = post.excerpt?.rendered?.replace(/<[^>]*>/g, '').trim() || ''
+        if (!excerpt) {
+          excerpt = post.content?.rendered?.replace(/<[^>]*>/g, '').substring(0, 200).trim() || ''
+        }
+
+        // Decode HTML entities in title
+        const title = (post.title?.rendered || '')
+          .replace(/&#8217;/g, "'")
+          .replace(/&#8220;/g, '"')
+          .replace(/&#8221;/g, '"')
+          .replace(/&amp;/g, '&')
+          .replace(/&#038;/g, '&')
+
+        return {
+          id: post.id,
+          title,
+          slug: post.slug,
+          date: post.date,
+          excerpt,
+          content: post.content?.rendered?.replace(/<[^>]*>/g, '').trim() || '',
+          image: imageUrl,
+          author: post._embedded?.author?.[0]?.name || 'Radio Miraflores TV',
+        }
+      })
 
     return NextResponse.json(items)
   } catch (error) {

@@ -87,13 +87,10 @@ export default function NoticiasSection() {
         const controller = new AbortController()
         const timeout = setTimeout(() => controller.abort(), 8000)
 
-        // Simple GET request - no custom headers to avoid CORS preflight
-        const res = await fetch(
-          `${WP_API}/wp/v2/posts?per_page=4&_embed=true&orderby=date&order=desc`,
-          {
-            signal: controller.signal,
-          }
-        )
+        // Use local API route as proxy to avoid CORS issues with ngrok
+        const res = await fetch('/api/wp/posts?per_page=4', {
+          signal: controller.signal,
+        })
 
         clearTimeout(timeout)
 
@@ -102,26 +99,27 @@ export default function NoticiasSection() {
 
         if (!isMounted) return
         if (Array.isArray(data) && data.length > 0) {
-          const items: NoticiaItem[] = data.map((post: any) => {
-            const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0]
-            let imageUrl = '/images/hero-radio-studio.png'
-            if (featuredMedia?.source_url) {
-              imageUrl = replaceLocalUrl(featuredMedia.source_url)
-            }
-
-            return {
+          // API route already transforms the data
+          // Filter out posts with empty titles
+          const items: NoticiaItem[] = data
+            .filter((post: any) => post.title && post.title.trim().length > 0)
+            .map((post: any) => ({
               id: post.id,
-              title: post.title.rendered,
+              title: post.title,
               date: post.date,
-              excerpt: post.excerpt.rendered.replace(/<[^>]*>/g, '').trim() ||
-                       post.content.rendered.replace(/<[^>]*>/g, '').substring(0, 200).trim(),
-              image: imageUrl,
-              author: post._embedded?.author?.[0]?.name || 'Radio Miraflores TV',
-            }
-          })
+              excerpt: post.excerpt || '',
+              content: post.content?.replace(/<[^>]*>/g, '').trim().substring(0, 200) || '',
+              image: post.image || '/images/hero-radio-studio.png',
+              author: post.author || 'Radio Miraflores TV',
+              likes: Math.floor(Math.random() * 400) + 100,
+              comments: Math.floor(Math.random() * 100) + 10,
+              shares: Math.floor(Math.random() * 150) + 20,
+            }))
 
-          setNoticias(items)
-          setIsFromWP(true)
+          if (items.length > 0) {
+            setNoticias(items)
+            setIsFromWP(true)
+          }
         }
       } catch {
         // Keep fallback data
@@ -198,7 +196,7 @@ export default function NoticiasSection() {
                 <div className="px-4 pb-3">
                   <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    {isWP ? noticia.excerpt : noticia.content}
+                    {isWP ? (noticia.excerpt || noticia.content || '') : noticia.content}
                   </p>
                 </div>
 
