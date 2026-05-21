@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,20 +10,179 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+// ============================================================
+// USUARIO ADMIN - Para acceder al panel de administración
+// ============================================================
+model AdminUser {
   id        String   @id @default(cuid())
   email     String   @unique
-  name      String?
+  password  String   // hashed password
+  name      String
+  role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Post {
+// ============================================================
+// SECCIÓN 1: HERO - Página principal
+// ============================================================
+model HeroSection {
+  id          String   @id @default(cuid())
+  title       String   @default("Radio Miraflores")
+  titleHighlight String @default("Televisión")
+  subtitle    String   @default("La estación de rock que mueve tu mundo 🎸🔥")
+  ctaPrimaryText   String @default("Ver Ranking")
+  ctaPrimaryLink   String @default("#ranking")
+  ctaSecondaryText String @default("Últimas Noticias")
+  ctaSecondaryLink String @default("#noticias")
+  backgroundImage  String @default("/images/hero-radio-studio.png")
+  overlayColor     String @default("from-[#B3E5FC]/85 via-[#81D4FA]/75 to-[#4FC3F7]/90")
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================
+// SECCIÓN 2: RANKING INTERNACIONAL
+// ============================================================
+model RankingItem {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  position  Int      // #1, #2, #3...
+  song      String   // Nombre de la canción
+  artist    String   // Artista/banda
+  album     String   @default("") // Álbum
+  weeks     Int      @default(1) // Semanas en el ranking
+  trend     String   @default("same") // up, down, same
+  imageUrl  String?  // Portada del álbum
+  active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// SECCIÓN 3: NOSOTROS - Historia de la radio
+// ============================================================
+model NosotrosSection {
+  id          String   @id @default(cuid())
+  subtitle    String   @default("Nuestra Historia")
+  title       String   @default("Nosotros")
+  description String   @default("Décadas de rock, pasión y música que conecta corazones")
+  stat1Value  String   @default("39+")
+  stat1Label  String   @default("Años al aire")
+  stat2Value  String   @default("50K+")
+  stat2Label  String   @default("Oyentes")
+  stat3Value  String   @default("100+")
+  stat3Label  String   @default("Programas")
+  stat4Value  String   @default("∞")
+  stat4Label  String   @default("Pasión rockera")
+  updatedAt   DateTime @updatedAt
+}
+
+model NosotrosCard {
+  id        String   @id @default(cuid())
+  year      String   // "1985", "1995", "2010", "2024"
+  title     String   // "Los Inicios", "La Evolución", etc.
+  description String // Descripción de la época
+  imageUrl  String   @default("/images/nosotros-80s.png")
+  icon      String   @default("radio") // radio, mic, headphones, heart
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// SECCIÓN 4: NOTICIAS
+// ============================================================
+model NoticiasSection {
+  id          String   @id @default(cuid())
+  subtitle    String   @default("Últimas Noticias")
+  title       String   @default("Noticias")
+  description String   @default("Mantente informado de todo lo que pasa en el mundo del rock")
+  maxVisible  Int      @default(2) // Cuántas noticias mostrar en la página
+  updatedAt   DateTime @updatedAt
+}
+
+model NoticiaItem {
+  id          String   @id @default(cuid())
+  title       String
+  excerpt     String?  // Resumen corto
+  content     String?  // Contenido completo (texto o HTML)
+  imageUrl    String?  // Imagen de la noticia
+  author      String   @default("Radio Miraflores TV")
+  facebookEmbedUrl String? // URL de embed de Facebook si aplica
+  published   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================
+// SECCIÓN 5: TESTIMONIOS
+// ============================================================
+model TestimoniosSection {
+  id          String   @id @default(cuid())
+  subtitle    String   @default("Lo que dicen nuestros oyentes")
+  title       String   @default("Testimonios")
+  description String   @default("Historias reales de quienes viven la magia de la radio")
+  updatedAt   DateTime @updatedAt
+}
+
+model TestimonioItem {
+  id          String   @id @default(cuid())
+  name        String   // Nombre del testimonio
+  role        String   @default("") // "Oyente desde 2005"
+  quote       String   // El testimonio completo
+  imageUrl    String?  // Foto del testimonio
+  rating      Int      @default(5) // 1-5 estrellas
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================
+// SECCIÓN 6: REDES SOCIALES
+// ============================================================
+model RedesSection {
+  id          String   @id @default(cuid())
+  subtitle    String   @default("Síguenos")
+  title       String   @default("Redes Sociales")
+  description String   @default("Conecta con nosotros en todas las plataformas")
+  updatedAt   DateTime @updatedAt
+}
+
+model RedSocial {
+  id          String   @id @default(cuid())
+  platform    String   // facebook, instagram, tiktok, youtube, twitter, etc.
+  url         String   // Link a la red social
+  username    String   @default("") // @radiomiraflores
+  followers   String   @default("") // "50K", "10K", etc.
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================
+// SECCIÓN 7: INFORMACIÓN / CONTACTO
+// ============================================================
+model InfoSection {
+  id            String   @id @default(cuid())
+  subtitle      String   @default("Contáctanos")
+  title         String   @default("Información")
+  description   String   @default("Estamos aquí para escucharte")
+  address       String   @default("")
+  phone         String   @default("")
+  email         String   @default("")
+  schedule      String   @default("Lunes a Viernes: 6:00 AM - 12:00 AM")
+  scheduleWeekend String @default("Sábados y Domingos: 8:00 AM - 10:00 PM")
+  mapUrl        String?  // Google Maps embed URL
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================================
+// SECCIÓN 8: FOOTER
+// ============================================================
+model FooterSection {
+  id            String   @id @default(cuid())
+  description   String   @default("La estación de rock que mueve tu mundo desde 1985.")
+  copyright     String   @default("© 2024 Radio Miraflores Televisión. Todos los derechos reservados.")
+  updatedAt     DateTime @updatedAt
 }
