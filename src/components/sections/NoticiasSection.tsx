@@ -86,7 +86,6 @@ function formatDate(dateStr: string): string {
 
 export default function NoticiasSection() {
   const [data, setData] = useState<NoticiasData>(defaultData)
-  const [isFromDB, setIsFromDB] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -109,7 +108,6 @@ export default function NoticiasSection() {
         if (!isMounted) return
         if (json && json.title) {
           setData(json)
-          setIsFromDB(true)
         }
       } catch {
         // Keep fallback data
@@ -143,15 +141,6 @@ export default function NoticiasSection() {
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
             {data.description}
           </p>
-          <div className="mt-2">
-            {isLoading ? (
-              <p className="text-gray-400 text-xs animate-pulse">Cargando noticias...</p>
-            ) : isFromDB ? (
-              <p className="text-green-500 text-xs">✓ Datos desde base de datos</p>
-            ) : (
-              <p className="text-yellow-500 text-xs">⚠ Usando datos de respaldo</p>
-            )}
-          </div>
         </motion.div>
 
         <div className="space-y-6">
@@ -190,7 +179,7 @@ export default function NoticiasSection() {
                       </h4>
                       <div className="flex items-center gap-1.5 text-gray-400 text-xs">
                         <Clock className="w-3 h-3" />
-                        <span>{isFromDB && noticia.createdAt ? formatDate(noticia.createdAt) : 'Hace un momento'}</span>
+                        <span>{noticia.createdAt ? formatDate(noticia.createdAt) : 'Hace un momento'}</span>
                         {isFacebookPost && (
                           <>
                             <span>·</span>

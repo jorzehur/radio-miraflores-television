@@ -41,7 +41,6 @@ const contactCards = [
 
 export default function InfoSection() {
   const [data, setData] = useState<InfoData>(defaultData)
-  const [isFromDB, setIsFromDB] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -64,7 +63,6 @@ export default function InfoSection() {
         if (!isMounted) return
         if (json && json.title) {
           setData(json)
-          setIsFromDB(true)
         }
       } catch {
         // Keep fallback data
@@ -98,15 +96,6 @@ export default function InfoSection() {
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
             {data.description}
           </p>
-          <div className="mt-2">
-            {isLoading ? (
-              <p className="text-gray-400 text-xs animate-pulse">Cargando...</p>
-            ) : isFromDB ? (
-              <p className="text-green-500 text-xs">✓ Datos desde base de datos</p>
-            ) : (
-              <p className="text-yellow-500 text-xs">⚠ Usando datos por defecto</p>
-            )}
-          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

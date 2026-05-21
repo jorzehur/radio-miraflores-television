@@ -34,7 +34,6 @@ const defaultHero: HeroData = {
 
 export default function HeroSection() {
   const [hero, setHero] = useState<HeroData>(defaultHero)
-  const [isFromDB, setIsFromDB] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -57,7 +56,6 @@ export default function HeroSection() {
         if (!isMounted) return
         if (data && data.title) {
           setHero(data)
-          setIsFromDB(true)
         }
       } catch {
         // Keep fallback data
@@ -143,17 +141,6 @@ export default function HeroSection() {
             >
               {hero.ctaSecondaryText}
             </a>
-          </div>
-
-          {/* DB Status indicator */}
-          <div className="mt-4">
-            {isLoading ? (
-              <p className="text-white/50 text-xs animate-pulse">Cargando...</p>
-            ) : isFromDB ? (
-              <p className="text-green-300 text-xs">✓ Datos desde base de datos</p>
-            ) : (
-              <p className="text-yellow-300 text-xs">⚠ Usando datos por defecto</p>
-            )}
           </div>
         </motion.div>
       </div>

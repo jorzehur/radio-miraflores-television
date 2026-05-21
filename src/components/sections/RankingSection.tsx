@@ -43,7 +43,6 @@ const cardVariants = {
 
 export default function RankingSection() {
   const [ranking, setRanking] = useState<RankingItem[]>(fallbackRanking)
-  const [isFromDB, setIsFromDB] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -68,7 +67,6 @@ export default function RankingSection() {
           const hasData = data.some((i: RankingItem) => i.song && i.song.length > 0)
           if (hasData) {
             setRanking(data)
-            setIsFromDB(true)
           }
         }
       } catch {
@@ -111,15 +109,6 @@ export default function RankingSection() {
           <p className="text-white/70 text-lg max-w-xl mx-auto">
             Las canciones de rock que dominan las ondas radiales esta semana
           </p>
-          <div className="mt-2">
-            {isLoading ? (
-              <p className="text-white/50 text-xs animate-pulse">Cargando ranking...</p>
-            ) : isFromDB ? (
-              <p className="text-green-300 text-xs">✓ Datos desde base de datos</p>
-            ) : (
-              <p className="text-yellow-300 text-xs">⚠ Usando datos de respaldo</p>
-            )}
-          </div>
         </motion.div>
 
         <motion.div

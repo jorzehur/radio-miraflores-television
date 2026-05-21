@@ -164,53 +164,71 @@ export default function AdminPanel() {
       switch (section) {
         case 'hero': {
           const res = await fetch('/api/admin/hero')
+          if (!res.ok) throw new Error('No autorizado')
           const d = await res.json()
-          setHeroData(d)
+          if (d && d.title) setHeroData(d)
           break
         }
         case 'ranking': {
           const res = await fetch('/api/admin/ranking')
-          setRankingData(await res.json())
+          if (!res.ok) throw new Error('No autorizado')
+          const d = await res.json()
+          if (Array.isArray(d)) setRankingData(d)
           break
         }
         case 'nosotros': {
           const res = await fetch('/api/admin/nosotros')
+          if (!res.ok) throw new Error('No autorizado')
           const d = await res.json()
-          setNosotrosCards(d.cards || [])
+          if (d && Array.isArray(d.cards)) setNosotrosCards(d.cards)
           break
         }
         case 'noticias': {
           const res = await fetch('/api/admin/noticias')
+          if (!res.ok) throw new Error('No autorizado')
           const d = await res.json()
-          setNoticiasData(d.items || [])
-          setNoticiasMaxVisible(d.maxVisible || 2)
+          if (d) {
+            if (Array.isArray(d.items)) setNoticiasData(d.items)
+            if (d.maxVisible) setNoticiasMaxVisible(d.maxVisible)
+          }
           break
         }
         case 'testimonios': {
           const res = await fetch('/api/admin/testimonios')
+          if (!res.ok) throw new Error('No autorizado')
           const d = await res.json()
-          setTestimoniosData(d.items || [])
+          if (d && Array.isArray(d.items)) setTestimoniosData(d.items)
           break
         }
         case 'redes': {
           const res = await fetch('/api/admin/redes')
+          if (!res.ok) throw new Error('No autorizado')
           const d = await res.json()
-          setRedesData(d.items || [])
+          if (d && Array.isArray(d.items)) setRedesData(d.items)
           break
         }
         case 'info': {
           const res = await fetch('/api/admin/info')
-          setInfoData(await res.json())
+          if (!res.ok) throw new Error('No autorizado')
+          const d = await res.json()
+          if (d && d.email) setInfoData(d)
           break
         }
         case 'footer': {
           const res = await fetch('/api/admin/footer')
-          setFooterData(await res.json())
+          if (!res.ok) throw new Error('No autorizado')
+          const d = await res.json()
+          if (d && d.description) setFooterData(d)
           break
         }
       }
-    } catch {
-      showToast('Error al cargar datos', 'error')
+    } catch (err: any) {
+      if (err?.message === 'No autorizado') {
+        showToast('Sesión expirada. Inicia sesión nuevamente.', 'error')
+        setIsLoggedIn(false)
+      } else {
+        showToast('Error al cargar datos', 'error')
+      }
     }
   }
 

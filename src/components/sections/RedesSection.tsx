@@ -159,7 +159,6 @@ function getPlatformIcon(platform: string) {
 
 export default function RedesSection() {
   const [data, setData] = useState<RedesData>(defaultData)
-  const [isFromDB, setIsFromDB] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -182,7 +181,6 @@ export default function RedesSection() {
         if (!isMounted) return
         if (json && json.title) {
           setData(json)
-          setIsFromDB(true)
         }
       } catch {
         // Keep fallback data
@@ -218,15 +216,6 @@ export default function RedesSection() {
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
             {data.description}
           </p>
-          <div className="mt-2">
-            {isLoading ? (
-              <p className="text-gray-400 text-xs animate-pulse">Cargando...</p>
-            ) : isFromDB ? (
-              <p className="text-green-500 text-xs">✓ Datos desde base de datos</p>
-            ) : (
-              <p className="text-yellow-500 text-xs">⚠ Usando datos por defecto</p>
-            )}
-          </div>
         </motion.div>
 
         {/* Social Cards */}

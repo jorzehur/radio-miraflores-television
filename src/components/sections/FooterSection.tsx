@@ -39,7 +39,7 @@ interface FooterFullData {
 const defaultFooter: FooterData = {
   id: 'default',
   description: 'La estación de rock que mueve tu mundo. Más de 39 años conectando corazones a través de la música.',
-  copyright: `© ${new Date().getFullYear()} Radio Miraflores Televisión. Todos los derechos reservados.`,
+  copyright: '© 2026 Radio Miraflores Televisión. Todos los derechos reservados.',
   updatedAt: '',
 }
 
@@ -77,7 +77,6 @@ export default function FooterSection() {
   const [footer, setFooter] = useState<FooterData>(defaultFooter)
   const [redes, setRedes] = useState<RedSocial[]>(defaultRedes)
   const [info, setInfo] = useState<InfoData>(defaultInfo)
-  const [isFromDB, setIsFromDB] = useState(false)
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -97,13 +96,10 @@ export default function FooterSection() {
 
         if (!isMounted) return
 
-        let loaded = false
-
         if (footerRes.ok) {
           const footerData = await footerRes.json()
           if (footerData && footerData.description) {
             setFooter(footerData)
-            loaded = true
           }
         }
 
@@ -111,7 +107,6 @@ export default function FooterSection() {
           const redesData = await redesRes.json()
           if (redesData?.items?.length > 0) {
             setRedes(redesData.items)
-            loaded = true
           }
         }
 
@@ -119,11 +114,8 @@ export default function FooterSection() {
           const infoData = await infoRes.json()
           if (infoData && infoData.email) {
             setInfo({ email: infoData.email, phone: infoData.phone, address: infoData.address })
-            loaded = true
           }
         }
-
-        if (loaded) setIsFromDB(true)
       } catch {
         // Keep fallback data
       }
