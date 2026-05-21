@@ -188,11 +188,11 @@ async function main() {
   if (existingRedes === 0) {
     await prisma.redSocial.createMany({
       data: [
-        { platform: 'facebook', url: 'https://facebook.com/radiomiraflorestelevision', username: '@radiomiraflorestelevision', followers: '50K seguidores', sortOrder: 1 },
-        { platform: 'instagram', url: 'https://instagram.com/radiomiraflorestelevision', username: '@radiomiraflorestelevision', followers: '25K seguidores', sortOrder: 2 },
-        { platform: 'tiktok', url: 'https://tiktok.com/@radiomiraflorestelevision', username: '@radiomiraflorestelevision', followers: '15K seguidores', sortOrder: 3 },
-        { platform: 'youtube', url: 'https://youtube.com/@radiomiraflorestelevision', username: '@radiomiraflorestelevision', followers: '10K suscriptores', sortOrder: 4 },
-        { platform: 'twitter', url: 'https://x.com/radiomiraflores', username: '@radiomiraflores', followers: '8K seguidores', sortOrder: 5 },
+        { platform: 'youtube', url: 'https://www.youtube.com/@RADIOMIRAFLORESTELEVISION', username: '@RADIOMIRAFLORESTELEVISION', followers: '10K suscriptores', sortOrder: 1 },
+        { platform: 'instagram', url: 'https://www.instagram.com/radiomiraflorestelevision/', username: '@radiomiraflorestelevision', followers: '25K seguidores', sortOrder: 2 },
+        { platform: 'twitter', url: 'https://x.com/Rmiraflorestv', username: '@Rmiraflorestv', followers: '8K seguidores', sortOrder: 3 },
+        { platform: 'facebook', url: 'https://facebook.com/radiomiraflorestelevision', username: '@radiomiraflorestelevision', followers: '50K seguidores', sortOrder: 4 },
+        { platform: 'tiktok', url: 'https://tiktok.com/@radiomiraflorestelevision', username: '@radiomiraflorestelevision', followers: '15K seguidores', sortOrder: 5 },
       ]
     })
     console.log('✅ Redes Sociales creadas')
@@ -206,9 +206,9 @@ async function main() {
         subtitle: 'Contáctanos',
         title: 'Información',
         description: 'Estamos aquí para escucharte',
-        address: 'Miraflores, Lima, Perú',
-        phone: '+51 01 234 5678',
-        email: 'contacto@radiomiraflores.com',
+        address: 'Av. Miraflores 1234, Lima, Perú',
+        phone: '+51 (01) 234-5678',
+        email: 'contacto@radiomiraflores.tv',
         schedule: 'Lunes a Viernes: 6:00 AM - 12:00 AM',
         scheduleWeekend: 'Sábados y Domingos: 8:00 AM - 10:00 PM',
       }
@@ -222,7 +222,7 @@ async function main() {
     await prisma.footerSection.create({
       data: {
         description: 'La estación de rock que mueve tu mundo desde 1985.',
-        copyright: '© 2024 Radio Miraflores Televisión. Todos los derechos reservados.',
+        copyright: '© 2026 Radio Miraflores Televisión. Todos los derechos reservados.',
       }
     })
     console.log('✅ Footer Section creada')

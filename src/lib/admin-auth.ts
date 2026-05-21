@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { db } from './db'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function getAdminUser() {
   try {
@@ -10,5 +11,15 @@ export async function getAdminUser() {
     return admin
   } catch {
     return null
+  }
+}
+
+export function requireAuth(handler: (request: NextRequest) => Promise<NextResponse>) {
+  return async (request: NextRequest): Promise<NextResponse> => {
+    const admin = await getAdminUser()
+    if (!admin) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+    return handler(request)
   }
 }

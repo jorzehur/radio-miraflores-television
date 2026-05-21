@@ -1,14 +1,137 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Heart, Radio, ArrowUp } from 'lucide-react'
 import { YoutubeIcon, InstagramIcon, TwitterXIcon } from '@/components/SocialIcons'
 
+interface RedSocial {
+  id: string
+  platform: string
+  url: string
+  username: string
+  followers: string
+  active: boolean
+  sortOrder: number
+  updatedAt: string
+}
+
+interface InfoData {
+  email: string
+  phone: string
+  address: string
+}
+
+interface FooterData {
+  id: string
+  description: string
+  copyright: string
+  updatedAt: string
+}
+
+interface FooterFullData {
+  footer: FooterData
+  redes: RedSocial[]
+  info: InfoData
+}
+
+const defaultFooter: FooterData = {
+  id: 'default',
+  description: 'La estación de rock que mueve tu mundo. Más de 39 años conectando corazones a través de la música.',
+  copyright: `© ${new Date().getFullYear()} Radio Miraflores Televisión. Todos los derechos reservados.`,
+  updatedAt: '',
+}
+
+const defaultRedes: RedSocial[] = [
+  { id: '1', platform: 'youtube', url: 'https://www.youtube.com/@RADIOMIRAFLORESTELEVISION', username: '@RADIOMIRAFLORESTELEVISION', followers: '', active: true, sortOrder: 0, updatedAt: '' },
+  { id: '2', platform: 'instagram', url: 'https://www.instagram.com/radiomiraflorestelevision/', username: '@radiomiraflorestelevision', followers: '', active: true, sortOrder: 1, updatedAt: '' },
+  { id: '3', platform: 'twitter', url: 'https://x.com/Rmiraflorestv', username: '@Rmiraflorestv', followers: '', active: true, sortOrder: 2, updatedAt: '' },
+]
+
+const defaultInfo: InfoData = {
+  email: 'contacto@radiomiraflores.tv',
+  phone: '+51 (01) 234-5678',
+  address: 'Av. Miraflores 1234, Lima, Perú',
+}
+
+const platformIconMap: Record<string, { icon: any; hoverColor: string; hoverBg: string }> = {
+  youtube: { icon: YoutubeIcon, hoverColor: 'hover:text-red-400', hoverBg: 'group-hover:bg-red-500/20' },
+  instagram: { icon: InstagramIcon, hoverColor: 'hover:text-pink-400', hoverBg: 'group-hover:bg-pink-500/20' },
+  twitter: { icon: TwitterXIcon, hoverColor: 'hover:text-blue-400', hoverBg: 'group-hover:bg-blue-500/20' },
+  facebook: { icon: null, hoverColor: 'hover:text-blue-400', hoverBg: 'group-hover:bg-blue-500/20' },
+  tiktok: { icon: null, hoverColor: 'hover:text-gray-300', hoverBg: 'group-hover:bg-gray-500/20' },
+  spotify: { icon: null, hoverColor: 'hover:text-green-400', hoverBg: 'group-hover:bg-green-500/20' },
+}
+
+const platformLabels: Record<string, string> = {
+  youtube: 'YouTube',
+  instagram: 'Instagram',
+  twitter: 'X (Twitter)',
+  facebook: 'Facebook',
+  tiktok: 'TikTok',
+  spotify: 'Spotify',
+}
+
 export default function FooterSection() {
+  const [footer, setFooter] = useState<FooterData>(defaultFooter)
+  const [redes, setRedes] = useState<RedSocial[]>(defaultRedes)
+  const [info, setInfo] = useState<InfoData>(defaultInfo)
+  const [isFromDB, setIsFromDB] = useState(false)
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchFooterData() {
+      try {
+        // Fetch footer, redes, and info in parallel
+        const [footerRes, redesRes, infoRes] = await Promise.all([
+          fetch('/api/public/footer', { signal: AbortSignal.timeout(5000) }),
+          fetch('/api/public/redes', { signal: AbortSignal.timeout(5000) }),
+          fetch('/api/public/info', { signal: AbortSignal.timeout(5000) }),
+        ])
+
+        if (!isMounted) return
+
+        let loaded = false
+
+        if (footerRes.ok) {
+          const footerData = await footerRes.json()
+          if (footerData && footerData.description) {
+            setFooter(footerData)
+            loaded = true
+          }
+        }
+
+        if (redesRes.ok) {
+          const redesData = await redesRes.json()
+          if (redesData?.items?.length > 0) {
+            setRedes(redesData.items)
+            loaded = true
+          }
+        }
+
+        if (infoRes.ok) {
+          const infoData = await infoRes.json()
+          if (infoData && infoData.email) {
+            setInfo({ email: infoData.email, phone: infoData.phone, address: infoData.address })
+            loaded = true
+          }
+        }
+
+        if (loaded) setIsFromDB(true)
+      } catch {
+        // Keep fallback data
+      }
+    }
+
+    fetchFooterData()
+    return () => { isMounted = false }
+  }, [])
 
   return (
     <footer className="relative overflow-hidden">
@@ -47,7 +170,7 @@ export default function FooterSection() {
               </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed mb-4">
-              La estación de rock que mueve tu mundo. Más de 39 años conectando corazones a través de la música.
+              {footer.description}
             </p>
             <div className="flex items-center gap-1 text-[#F5A623]">
               <Radio className="w-4 h-4" />
@@ -87,10 +210,9 @@ export default function FooterSection() {
           >
             <h4 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">Contacto</h4>
             <div className="space-y-3">
-              <p className="text-white/60 text-sm">contacto@radiomiraflores.tv</p>
-              <p className="text-white/60 text-sm">+51 (01) 234-5678</p>
-              <p className="text-white/60 text-sm">Av. Miraflores 1234</p>
-              <p className="text-white/60 text-sm">Lima, Perú</p>
+              <p className="text-white/60 text-sm">{info.email}</p>
+              <p className="text-white/60 text-sm">{info.phone}</p>
+              <p className="text-white/60 text-sm">{info.address}</p>
             </div>
           </motion.div>
 
@@ -103,39 +225,30 @@ export default function FooterSection() {
           >
             <h4 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">Síguenos</h4>
             <div className="space-y-3">
-              <a
-                href="https://www.youtube.com/@RADIOMIRAFLORESTELEVISION"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 text-white/60 text-sm hover:text-red-400 transition-colors group"
-              >
-                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
-                  <YoutubeIcon size={16} />
-                </div>
-                YouTube
-              </a>
-              <a
-                href="https://www.instagram.com/radiomiraflorestelevision/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 text-white/60 text-sm hover:text-pink-400 transition-colors group"
-              >
-                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-pink-500/20 transition-colors">
-                  <InstagramIcon size={16} />
-                </div>
-                Instagram
-              </a>
-              <a
-                href="https://x.com/Rmiraflorestv"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 text-white/60 text-sm hover:text-blue-400 transition-colors group"
-              >
-                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                  <TwitterXIcon size={16} />
-                </div>
-                X (Twitter)
-              </a>
+              {redes.map((social) => {
+                const platformInfo = platformIconMap[social.platform]
+                const label = platformLabels[social.platform] || social.platform
+                const IconComponent = platformInfo?.icon
+
+                return (
+                  <a
+                    key={social.id}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex items-center gap-3 text-white/60 text-sm ${platformInfo?.hoverColor || 'hover:text-white'} transition-colors group`}
+                  >
+                    <div className={`w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center ${platformInfo?.hoverBg || 'group-hover:bg-white/20'} transition-colors`}>
+                      {IconComponent ? (
+                        <IconComponent size={16} />
+                      ) : (
+                        <span className="text-white text-xs font-bold">{label[0]}</span>
+                      )}
+                    </div>
+                    {label}
+                  </a>
+                )
+              })}
             </div>
           </motion.div>
         </div>
@@ -144,7 +257,7 @@ export default function FooterSection() {
         <div className="border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-white/40 text-sm text-center md:text-left">
-              © {new Date().getFullYear()} Radio Miraflores Televisión. Todos los derechos reservados.
+              {footer.copyright}
             </p>
             <div className="flex items-center gap-1 text-white/40 text-sm">
               Hecho con <Heart className="w-3.5 h-3.5 text-[#8B1A2B] fill-[#8B1A2B]" /> para los amantes del rock
