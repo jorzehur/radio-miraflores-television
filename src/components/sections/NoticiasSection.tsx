@@ -69,14 +69,25 @@ export default function NoticiasSection() {
   const [noticias, setNoticias] = useState<WPNoticia[]>([])
   const [isFromWP, setIsFromWP] = useState(false)
 
+  const [wpStatus, setWpStatus] = useState<'loading' | 'connected' | 'offline'>('loading')
+
   useEffect(() => {
     async function fetchNoticias() {
       try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 5000) // 5 segundos máximo
+
         const res = await fetch(`${WP_API}/wp/v2/posts?per_page=2&_embed=true&_t=${Date.now()}`, { 
           cache: 'no-store',
-          headers: { 'ngrok-skip-browser-warning': 'true' }
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+          signal: controller.signal,
         })
-        if (!res.ok) return
+        clearTimeout(timeout)
+
+        if (!res.ok) {
+          setWpStatus('offline')
+          return
+        }
         const data = await res.json()
         if (data && data.length > 0) {
           const items = data.map((p: any) => ({
@@ -88,9 +99,12 @@ export default function NoticiasSection() {
           }))
           setNoticias(items)
           setIsFromWP(true)
+          setWpStatus('connected')
+        } else {
+          setWpStatus('offline')
         }
       } catch {
-        // Use fallback
+        setWpStatus('offline')
       }
     }
     fetchNoticias()
@@ -117,7 +131,10 @@ export default function NoticiasSection() {
             Mantente informado de todo lo que pasa en el mundo del rock
           </p>
           {isFromWP && (
-            <p className="text-blue-400 text-xs mt-2">✓ Datos desde WordPress</p>
+            <p className="text-green-500 text-xs mt-2">✓ Datos desde WordPress</p>
+          )}
+          {!isFromWP && wpStatus === 'offline' && (
+            <p className="text-amber-500 text-xs mt-2">⚡ WordPress no disponible — Mostrando datos de ejemplo</p>
           )}
         </motion.div>
 

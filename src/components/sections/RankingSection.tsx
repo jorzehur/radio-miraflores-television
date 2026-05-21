@@ -33,15 +33,25 @@ const cardVariants = {
 export default function RankingSection() {
   const [rankingData, setRankingData] = useState<Array<{position: number; song: string; artist: string; album: string; weeks: number; trend: string}>>([])
   const [isFromWP, setIsFromWP] = useState(false)
+  const [wpStatus, setWpStatus] = useState<'loading' | 'connected' | 'offline'>('loading')
 
   useEffect(() => {
     async function fetchRanking() {
       try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 5000) // 5 segundos máximo
+
         const res = await fetch(`${WP_API}/wp/v2/ranking?per_page=4&_embed=true&_t=${Date.now()}`, { 
           cache: 'no-store',
-          headers: { 'ngrok-skip-browser-warning': 'true' }
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+          signal: controller.signal,
         })
-        if (!res.ok) return
+        clearTimeout(timeout)
+
+        if (!res.ok) {
+          setWpStatus('offline')
+          return
+        }
         const data = await res.json()
         if (data && data.length > 0) {
           const items = data.map((item: any) => ({
@@ -52,13 +62,15 @@ export default function RankingSection() {
             weeks: item.meta?.weeks || 0,
             trend: item.meta?.trend || 'same',
           }))
-          // Sort by position
           items.sort((a: any, b: any) => a.position - b.position)
           setRankingData(items.slice(0, 4))
           setIsFromWP(true)
+          setWpStatus('connected')
+        } else {
+          setWpStatus('offline')
         }
       } catch {
-        // Use fallback
+        setWpStatus('offline')
       }
     }
     fetchRanking()
@@ -94,7 +106,10 @@ export default function RankingSection() {
             Las canciones de rock que dominan las ondas radiales esta semana
           </p>
           {isFromWP && (
-            <p className="text-[#FFD166] text-xs mt-2">✓ Datos desde WordPress</p>
+            <p className="text-green-300 text-xs mt-2">✓ Datos desde WordPress</p>
+          )}
+          {!isFromWP && wpStatus === 'offline' && (
+            <p className="text-amber-300 text-xs mt-2">⚡ WordPress en mantenimiento — Mostrando datos de ejemplo</p>
           )}
         </motion.div>
 
