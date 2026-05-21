@@ -1,15 +1,25 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Music, Trophy, TrendingUp, Flame } from 'lucide-react'
-import { rankingData } from '@/data'
 
-// Fallback data
-const fallbackRanking = [
-  { position: 1, song: 'Bohemian Rhapsody', artist: 'Queen', album: 'A Night at the Opera', weeks: 12, trend: 'up' },
-  { position: 2, song: 'Hotel California', artist: 'Eagles', album: 'Hotel California', weeks: 8, trend: 'up' },
-  { position: 3, song: 'Stairway to Heaven', artist: 'Led Zeppelin', album: 'Led Zeppelin IV', weeks: 15, trend: 'same' },
-  { position: 4, song: "Sweet Child O' Mine", artist: "Guns N' Roses", album: 'Appetite for Destruction', weeks: 6, trend: 'up' },
+interface RankingItem {
+  id: number
+  position: number
+  song: string
+  artist: string
+  album: string
+  weeks: number
+  trend: 'up' | 'down' | 'same'
+  imageUrl?: string | null
+}
+
+const fallbackRanking: RankingItem[] = [
+  { id: 1, position: 1, song: 'Bohemian Rhapsody', artist: 'Queen', album: 'A Night at the Opera', weeks: 12, trend: 'up' },
+  { id: 2, position: 2, song: 'Hotel California', artist: 'Eagles', album: 'Hotel California', weeks: 8, trend: 'up' },
+  { id: 3, position: 3, song: 'Stairway to Heaven', artist: 'Led Zeppelin', album: 'Led Zeppelin IV', weeks: 15, trend: 'same' },
+  { id: 4, position: 4, song: "Sweet Child O' Mine", artist: "Guns N' Roses", album: 'Appetite for Destruction', weeks: 6, trend: 'up' },
 ]
 
 const cardStyles = [
@@ -28,11 +38,71 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 }
 
-// Use WordPress data if available, otherwise fallback
-const wpHasData = rankingData && rankingData.length > 0
-const displayData = wpHasData ? rankingData.slice(0, 4) : fallbackRanking
+const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
+const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word'
+
+function replaceLocalUrl(url: string): string {
+  if (url && url.includes('localhost/word')) {
+    return url.replace(/http:\/\/localhost\/word/g, WP_SITE)
+  }
+  return url
+}
 
 export default function RankingSection() {
+  const [ranking, setRanking] = useState<RankingItem[]>(fallbackRanking)
+  const [isFromWP, setIsFromWP] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchRanking() {
+      try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 8000)
+
+        // Simple GET request - no custom headers to avoid CORS preflight
+        // The ngrok cookie (set when user visits the URL) handles the browser warning
+        const res = await fetch(`${WP_API}/wp/v2/ranking?per_page=10&_embed=true`, {
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeout)
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+
+        if (!isMounted) return
+        if (Array.isArray(data) && data.length > 0) {
+          const items: RankingItem[] = data
+            .map((item: any) => ({
+              id: item.id,
+              position: item.meta?.position || 0,
+              song: item.meta?.song || item.title?.rendered || '',
+              artist: item.meta?.artist || '',
+              album: item.meta?.album || '',
+              weeks: item.meta?.weeks || 0,
+              trend: item.meta?.trend || 'same',
+              imageUrl: item.meta?.cover_image ? replaceLocalUrl(item.meta.cover_image) : null,
+            }))
+            .sort((a: RankingItem, b: RankingItem) => a.position - b.position)
+
+          setRanking(items)
+          setIsFromWP(true)
+        }
+      } catch {
+        // Keep fallback data
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
+    }
+
+    fetchRanking()
+    return () => { isMounted = false }
+  }, [])
+
+  const displayData = ranking.slice(0, 4)
+
   return (
     <section id="ranking" className="relative py-20 md:py-28 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#8B1A2B] via-[#7A1525] to-[#6B0F1E]" />
@@ -60,9 +130,15 @@ export default function RankingSection() {
           <p className="text-white/70 text-lg max-w-xl mx-auto">
             Las canciones de rock que dominan las ondas radiales esta semana
           </p>
-          {wpHasData && (
-            <p className="text-green-300 text-xs mt-2">✓ Datos desde WordPress</p>
-          )}
+          <div className="mt-2">
+            {isLoading ? (
+              <p className="text-white/50 text-xs animate-pulse">Conectando con WordPress...</p>
+            ) : isFromWP ? (
+              <p className="text-green-300 text-xs">✓ Datos desde WordPress</p>
+            ) : (
+              <p className="text-yellow-300 text-xs">⚠ Usando datos de respaldo (WordPress no disponible)</p>
+            )}
+          </div>
         </motion.div>
 
         <motion.div
@@ -77,7 +153,7 @@ export default function RankingSection() {
             const IconComponent = style.icon
             return (
               <motion.div
-                key={item.position || index}
+                key={item.id || index}
                 variants={cardVariants}
                 whileHover={{ y: -8, scale: 1.02 }}
                 transition={{ type: 'spring', stiffness: 300 }}

@@ -1,10 +1,24 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ThumbsUp, MessageCircle, Share2, Clock } from 'lucide-react'
-import { noticiasData } from '@/data'
 
-const fallbackNoticias = [
+interface NoticiaItem {
+  id: number
+  title: string
+  date: string
+  excerpt: string
+  image: string
+  author: string
+  time?: string
+  content?: string
+  likes?: number
+  comments?: number
+  shares?: number
+}
+
+const fallbackNoticias: NoticiaItem[] = [
   {
     id: 1,
     time: 'Hace 2 horas',
@@ -14,6 +28,9 @@ const fallbackNoticias = [
     likes: 245,
     comments: 38,
     shares: 56,
+    author: 'Radio Miraflores TV',
+    date: '',
+    excerpt: '',
   },
   {
     id: 2,
@@ -24,6 +41,9 @@ const fallbackNoticias = [
     likes: 412,
     comments: 89,
     shares: 127,
+    author: 'Radio Miraflores TV',
+    date: '',
+    excerpt: '',
   },
 ]
 
@@ -44,21 +64,78 @@ function formatDate(dateStr: string): string {
   }
 }
 
-// Use WordPress data if available, otherwise fallback
-const wpHasData = noticiasData && noticiasData.length > 0
+const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
+const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word'
 
-// Convert WP data to display format
-const wpNoticias = wpHasData ? noticiasData.slice(0, 2).map(n => ({
-  id: n.id,
-  title: n.title,
-  date: n.date,
-  excerpt: n.excerpt,
-  image: n.image,
-})) : []
-
-const displayNoticias = wpHasData ? wpNoticias : fallbackNoticias
+function replaceLocalUrl(url: string): string {
+  if (url && url.includes('localhost/word')) {
+    return url.replace(/http:\/\/localhost\/word/g, WP_SITE)
+  }
+  return url
+}
 
 export default function NoticiasSection() {
+  const [noticias, setNoticias] = useState<NoticiaItem[]>(fallbackNoticias)
+  const [isFromWP, setIsFromWP] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchNoticias() {
+      try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 8000)
+
+        // Simple GET request - no custom headers to avoid CORS preflight
+        const res = await fetch(
+          `${WP_API}/wp/v2/posts?per_page=4&_embed=true&orderby=date&order=desc`,
+          {
+            signal: controller.signal,
+          }
+        )
+
+        clearTimeout(timeout)
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+
+        if (!isMounted) return
+        if (Array.isArray(data) && data.length > 0) {
+          const items: NoticiaItem[] = data.map((post: any) => {
+            const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0]
+            let imageUrl = '/images/hero-radio-studio.png'
+            if (featuredMedia?.source_url) {
+              imageUrl = replaceLocalUrl(featuredMedia.source_url)
+            }
+
+            return {
+              id: post.id,
+              title: post.title.rendered,
+              date: post.date,
+              excerpt: post.excerpt.rendered.replace(/<[^>]*>/g, '').trim() ||
+                       post.content.rendered.replace(/<[^>]*>/g, '').substring(0, 200).trim(),
+              image: imageUrl,
+              author: post._embedded?.author?.[0]?.name || 'Radio Miraflores TV',
+            }
+          })
+
+          setNoticias(items)
+          setIsFromWP(true)
+        }
+      } catch {
+        // Keep fallback data
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
+    }
+
+    fetchNoticias()
+    return () => { isMounted = false }
+  }, [])
+
+  const displayNoticias = noticias.slice(0, 2)
+
   return (
     <section id="noticias" className="py-20 md:py-28 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,14 +154,20 @@ export default function NoticiasSection() {
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
             Mantente informado de todo lo que pasa en el mundo del rock
           </p>
-          {wpHasData && (
-            <p className="text-green-500 text-xs mt-2">✓ Datos desde WordPress</p>
-          )}
+          <div className="mt-2">
+            {isLoading ? (
+              <p className="text-gray-400 text-xs animate-pulse">Conectando con WordPress...</p>
+            ) : isFromWP ? (
+              <p className="text-green-500 text-xs">✓ Datos desde WordPress</p>
+            ) : (
+              <p className="text-yellow-500 text-xs">⚠ Usando datos de respaldo (WordPress no disponible)</p>
+            )}
+          </div>
         </motion.div>
 
         <div className="space-y-6">
           {displayNoticias.map((noticia, index) => {
-            const isWP = wpHasData && 'date' in noticia
+            const isWP = isFromWP
             return (
               <motion.div
                 key={noticia.id}
@@ -104,7 +187,7 @@ export default function NoticiasSection() {
                       <h4 className="font-bold text-gray-900 text-sm">Radio Miraflores TV</h4>
                       <div className="flex items-center gap-1.5 text-gray-400 text-xs">
                         <Clock className="w-3 h-3" />
-                        <span>{isWP ? formatDate((noticia as any).date) : (noticia as any).time}</span>
+                        <span>{isWP && noticia.date ? formatDate(noticia.date) : noticia.time}</span>
                         <span>·</span><span>🌍</span>
                       </div>
                     </div>
@@ -115,37 +198,37 @@ export default function NoticiasSection() {
                 <div className="px-4 pb-3">
                   <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    {isWP ? (noticia as any).excerpt : (noticia as any).content}
+                    {isWP ? noticia.excerpt : noticia.content}
                   </p>
                 </div>
 
                 {/* Image */}
                 <div className="relative cursor-pointer group">
                   <img
-                    src={isWP ? ((noticia as any).image || '/images/hero-radio-studio.png') : (noticia as any).image}
+                    src={noticia.image || '/images/hero-radio-studio.png'}
                     alt={noticia.title}
                     className="w-full h-56 sm:h-72 object-cover group-hover:scale-[1.02] transition-transform duration-500"
                   />
                 </div>
 
-                {/* Reactions */}
-                <div className="px-4 py-2.5 border-b border-gray-100">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <span className="flex -space-x-1">
-                        <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px]">👍</span>
-                        <span className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-white text-[8px]">❤️</span>
-                      </span>
-                      {!isWP && <span className="ml-1">{(noticia as any).likes}</span>}
-                    </div>
-                    {!isWP && (
-                      <div className="flex items-center gap-3">
-                        <span>{(noticia as any).comments} comentarios</span>
-                        <span>{(noticia as any).shares} compartidos</span>
+                {/* Reactions - only show for fallback data */}
+                {!isWP && (
+                  <div className="px-4 py-2.5 border-b border-gray-100">
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <span className="flex -space-x-1">
+                          <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px]">👍</span>
+                          <span className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-white text-[8px]">❤️</span>
+                        </span>
+                        <span className="ml-1">{noticia.likes}</span>
                       </div>
-                    )}
+                      <div className="flex items-center gap-3">
+                        <span>{noticia.comments} comentarios</span>
+                        <span>{noticia.shares} compartidos</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Actions */}
                 <div className="px-2 py-1">

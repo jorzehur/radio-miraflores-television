@@ -176,7 +176,7 @@ export function getWpImageUrl(path: string): string {
  */
 const LOCAL_WP_URL = 'http://localhost/word'
 
-function replaceWpUrl(url: string): string {
+export function replaceWpUrl(url: string): string {
   if (url.includes('localhost/word') || url.includes('localhost%2Fword')) {
     return url.replace(/http:\/\/localhost\/word/g, WP_SITE)
   }
