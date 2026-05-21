@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { ThumbsUp, MessageCircle, Share2, Clock } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { noticiasData } from '@/data'
 
 const fallbackNoticias = [
   {
@@ -27,19 +27,6 @@ const fallbackNoticias = [
   },
 ]
 
-const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
-const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word'
-
-/**
- * Reemplazar URLs locales de WordPress por ngrok
- */
-function replaceLocalUrl(url: string): string {
-  if (url && url.includes('localhost/word')) {
-    return url.replace(/http:\/\/localhost\/word/g, WP_SITE)
-  }
-  return url
-}
-
 function formatDate(dateStr: string): string {
   try {
     const date = new Date(dateStr)
@@ -57,61 +44,21 @@ function formatDate(dateStr: string): string {
   }
 }
 
-interface WPNoticia {
-  id: number
-  title: string
-  date: string
-  excerpt: string
-  image: string | null
-}
+// Use WordPress data if available, otherwise fallback
+const wpHasData = noticiasData && noticiasData.length > 0
+
+// Convert WP data to display format
+const wpNoticias = wpHasData ? noticiasData.slice(0, 2).map(n => ({
+  id: n.id,
+  title: n.title,
+  date: n.date,
+  excerpt: n.excerpt,
+  image: n.image,
+})) : []
+
+const displayNoticias = wpHasData ? wpNoticias : fallbackNoticias
 
 export default function NoticiasSection() {
-  const [noticias, setNoticias] = useState<WPNoticia[]>([])
-  const [isFromWP, setIsFromWP] = useState(false)
-
-  const [wpStatus, setWpStatus] = useState<'loading' | 'connected' | 'offline'>('loading')
-
-  useEffect(() => {
-    async function fetchNoticias() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000) // 5 segundos máximo
-
-        const res = await fetch(`${WP_API}/wp/v2/posts?per_page=2&_embed=true&_t=${Date.now()}`, { 
-          cache: 'no-store',
-          headers: { 'ngrok-skip-browser-warning': 'true' },
-          signal: controller.signal,
-        })
-        clearTimeout(timeout)
-
-        if (!res.ok) {
-          setWpStatus('offline')
-          return
-        }
-        const data = await res.json()
-        if (data && data.length > 0) {
-          const items = data.map((p: any) => ({
-            id: p.id,
-            title: p.title.rendered,
-            date: p.date,
-            excerpt: p.excerpt.rendered.replace(/<[^>]*>/g, '').substring(0, 200),
-            image: p._embedded?.['wp:featuredmedia']?.[0]?.source_url ? replaceLocalUrl(p._embedded['wp:featuredmedia'][0].source_url) : null,
-          }))
-          setNoticias(items)
-          setIsFromWP(true)
-          setWpStatus('connected')
-        } else {
-          setWpStatus('offline')
-        }
-      } catch {
-        setWpStatus('offline')
-      }
-    }
-    fetchNoticias()
-  }, [])
-
-  const hasWpData = noticias.length > 0
-
   return (
     <section id="noticias" className="py-20 md:py-28 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -130,91 +77,93 @@ export default function NoticiasSection() {
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
             Mantente informado de todo lo que pasa en el mundo del rock
           </p>
-          {isFromWP && (
+          {wpHasData && (
             <p className="text-green-500 text-xs mt-2">✓ Datos desde WordPress</p>
-          )}
-          {!isFromWP && wpStatus === 'offline' && (
-            <p className="text-amber-500 text-xs mt-2">⚡ WordPress no disponible — Mostrando datos de ejemplo</p>
           )}
         </motion.div>
 
         <div className="space-y-6">
-          {(hasWpData ? noticias : fallbackNoticias).map((noticia, index) => (
-            <motion.div
-              key={noticia.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden"
-            >
-              {/* Header */}
-              <div className="p-4 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8B1A2B] to-[#A63346] flex items-center justify-center shadow-md">
-                    <span className="text-white font-bold text-sm">RM</span>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-gray-900 text-sm">Radio Miraflores TV</h4>
-                    <div className="flex items-center gap-1.5 text-gray-400 text-xs">
-                      <Clock className="w-3 h-3" />
-                      <span>{hasWpData ? formatDate((noticia as WPNoticia).date) : (noticia as typeof fallbackNoticias[0]).time}</span>
-                      <span>·</span><span>🌍</span>
+          {displayNoticias.map((noticia, index) => {
+            const isWP = wpHasData && 'date' in noticia
+            return (
+              <motion.div
+                key={noticia.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
+                className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden"
+              >
+                {/* Header */}
+                <div className="p-4 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8B1A2B] to-[#A63346] flex items-center justify-center shadow-md">
+                      <span className="text-white font-bold text-sm">RM</span>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-900 text-sm">Radio Miraflores TV</h4>
+                      <div className="flex items-center gap-1.5 text-gray-400 text-xs">
+                        <Clock className="w-3 h-3" />
+                        <span>{isWP ? formatDate((noticia as any).date) : (noticia as any).time}</span>
+                        <span>·</span><span>🌍</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Content */}
-              <div className="px-4 pb-3">
-                <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{hasWpData ? (noticia as WPNoticia).excerpt : (noticia as typeof fallbackNoticias[0]).content}</p>
-              </div>
+                {/* Content */}
+                <div className="px-4 pb-3">
+                  <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {isWP ? (noticia as any).excerpt : (noticia as any).content}
+                  </p>
+                </div>
 
-              {/* Image */}
-              <div className="relative cursor-pointer group">
-                <img
-                  src={hasWpData ? ((noticia as WPNoticia).image || '/images/hero-radio-studio.png') : (noticia as typeof fallbackNoticias[0]).image}
-                  alt={noticia.title}
-                  className="w-full h-56 sm:h-72 object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                />
-              </div>
+                {/* Image */}
+                <div className="relative cursor-pointer group">
+                  <img
+                    src={isWP ? ((noticia as any).image || '/images/hero-radio-studio.png') : (noticia as any).image}
+                    alt={noticia.title}
+                    className="w-full h-56 sm:h-72 object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                  />
+                </div>
 
-              {/* Reactions */}
-              <div className="px-4 py-2.5 border-b border-gray-100">
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <span className="flex -space-x-1">
-                      <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px]">👍</span>
-                      <span className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-white text-[8px]">❤️</span>
-                    </span>
-                    {!hasWpData && <span className="ml-1">{(noticia as typeof fallbackNoticias[0]).likes}</span>}
-                  </div>
-                  {!hasWpData && (
-                    <div className="flex items-center gap-3">
-                      <span>{(noticia as typeof fallbackNoticias[0]).comments} comentarios</span>
-                      <span>{(noticia as typeof fallbackNoticias[0]).shares} compartidos</span>
+                {/* Reactions */}
+                <div className="px-4 py-2.5 border-b border-gray-100">
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <span className="flex -space-x-1">
+                        <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px]">👍</span>
+                        <span className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-white text-[8px]">❤️</span>
+                      </span>
+                      {!isWP && <span className="ml-1">{(noticia as any).likes}</span>}
                     </div>
-                  )}
+                    {!isWP && (
+                      <div className="flex items-center gap-3">
+                        <span>{(noticia as any).comments} comentarios</span>
+                        <span>{(noticia as any).shares} compartidos</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div className="px-2 py-1">
-                <div className="flex items-center">
-                  <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
-                    <ThumbsUp className="w-4 h-4" /> Me gusta
-                  </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
-                    <MessageCircle className="w-4 h-4" /> Comentar
-                  </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
-                    <Share2 className="w-4 h-4" /> Compartir
-                  </button>
+                {/* Actions */}
+                <div className="px-2 py-1">
+                  <div className="flex items-center">
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
+                      <ThumbsUp className="w-4 h-4" /> Me gusta
+                    </button>
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
+                      <MessageCircle className="w-4 h-4" /> Comentar
+                    </button>
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
+                      <Share2 className="w-4 h-4" /> Compartir
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            )
+          })}
         </div>
       </div>
     </section>

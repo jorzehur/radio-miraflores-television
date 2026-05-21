@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Music, Trophy, TrendingUp, Flame } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { rankingData } from '@/data'
 
 // Fallback data
 const fallbackRanking = [
@@ -19,8 +19,6 @@ const cardStyles = [
   { color: 'from-[#8B1A2B] to-[#A63346]', bgColor: 'bg-gradient-to-br from-[#FDF2F4] to-[#FCE7EB]', borderColor: 'border-[#FCE7EB]', icon: TrendingUp },
 ]
 
-const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
@@ -30,54 +28,11 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 }
 
+// Use WordPress data if available, otherwise fallback
+const wpHasData = rankingData && rankingData.length > 0
+const displayData = wpHasData ? rankingData.slice(0, 4) : fallbackRanking
+
 export default function RankingSection() {
-  const [rankingData, setRankingData] = useState<Array<{position: number; song: string; artist: string; album: string; weeks: number; trend: string}>>([])
-  const [isFromWP, setIsFromWP] = useState(false)
-  const [wpStatus, setWpStatus] = useState<'loading' | 'connected' | 'offline'>('loading')
-
-  useEffect(() => {
-    async function fetchRanking() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000) // 5 segundos máximo
-
-        const res = await fetch(`${WP_API}/wp/v2/ranking?per_page=4&_embed=true&_t=${Date.now()}`, { 
-          cache: 'no-store',
-          headers: { 'ngrok-skip-browser-warning': 'true' },
-          signal: controller.signal,
-        })
-        clearTimeout(timeout)
-
-        if (!res.ok) {
-          setWpStatus('offline')
-          return
-        }
-        const data = await res.json()
-        if (data && data.length > 0) {
-          const items = data.map((item: any) => ({
-            position: item.meta?.position || item.position || 0,
-            song: item.meta?.song || '',
-            artist: item.meta?.artist || '',
-            album: item.meta?.album || '',
-            weeks: item.meta?.weeks || 0,
-            trend: item.meta?.trend || 'same',
-          }))
-          items.sort((a: any, b: any) => a.position - b.position)
-          setRankingData(items.slice(0, 4))
-          setIsFromWP(true)
-          setWpStatus('connected')
-        } else {
-          setWpStatus('offline')
-        }
-      } catch {
-        setWpStatus('offline')
-      }
-    }
-    fetchRanking()
-  }, [])
-
-  const displayData = rankingData.length > 0 ? rankingData : fallbackRanking
-
   return (
     <section id="ranking" className="relative py-20 md:py-28 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#8B1A2B] via-[#7A1525] to-[#6B0F1E]" />
@@ -105,11 +60,8 @@ export default function RankingSection() {
           <p className="text-white/70 text-lg max-w-xl mx-auto">
             Las canciones de rock que dominan las ondas radiales esta semana
           </p>
-          {isFromWP && (
+          {wpHasData && (
             <p className="text-green-300 text-xs mt-2">✓ Datos desde WordPress</p>
-          )}
-          {!isFromWP && wpStatus === 'offline' && (
-            <p className="text-amber-300 text-xs mt-2">⚡ WordPress en mantenimiento — Mostrando datos de ejemplo</p>
           )}
         </motion.div>
 
@@ -120,7 +72,7 @@ export default function RankingSection() {
           viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6"
         >
-          {displayData.slice(0, 4).map((item, index) => {
+          {displayData.map((item, index) => {
             const style = cardStyles[index] || cardStyles[0]
             const IconComponent = style.icon
             return (
