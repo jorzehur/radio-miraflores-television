@@ -5,21 +5,24 @@ import { motion } from 'framer-motion'
 import { Music, Trophy, TrendingUp, Flame } from 'lucide-react'
 
 interface RankingItem {
-  id: number
+  id: string
   position: number
   song: string
   artist: string
   album: string
   weeks: number
-  trend: 'up' | 'down' | 'same'
+  trend: string
   imageUrl?: string | null
+  active: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 const fallbackRanking: RankingItem[] = [
-  { id: 1, position: 1, song: 'Bohemian Rhapsody', artist: 'Queen', album: 'A Night at the Opera', weeks: 12, trend: 'up' },
-  { id: 2, position: 2, song: 'Hotel California', artist: 'Eagles', album: 'Hotel California', weeks: 8, trend: 'up' },
-  { id: 3, position: 3, song: 'Stairway to Heaven', artist: 'Led Zeppelin', album: 'Led Zeppelin IV', weeks: 15, trend: 'same' },
-  { id: 4, position: 4, song: "Sweet Child O' Mine", artist: "Guns N' Roses", album: 'Appetite for Destruction', weeks: 6, trend: 'up' },
+  { id: '1', position: 1, song: 'Bohemian Rhapsody', artist: 'Queen', album: 'A Night at the Opera', weeks: 12, trend: 'up', active: true, createdAt: '', updatedAt: '' },
+  { id: '2', position: 2, song: 'Hotel California', artist: 'Eagles', album: 'Hotel California', weeks: 8, trend: 'up', active: true, createdAt: '', updatedAt: '' },
+  { id: '3', position: 3, song: 'Stairway to Heaven', artist: 'Led Zeppelin', album: 'Led Zeppelin IV', weeks: 15, trend: 'same', active: true, createdAt: '', updatedAt: '' },
+  { id: '4', position: 4, song: "Sweet Child O' Mine", artist: "Guns N' Roses", album: 'Appetite for Destruction', weeks: 6, trend: 'up', active: true, createdAt: '', updatedAt: '' },
 ]
 
 const cardStyles = [
@@ -38,19 +41,9 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 }
 
-const WP_API = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word/wp-json'
-const WP_SITE = process.env.NEXT_PUBLIC_WORDPRESS_SITE_URL || 'https://purist-mongoose-ungraded.ngrok-free.dev/word'
-
-function replaceLocalUrl(url: string): string {
-  if (url && url.includes('localhost/word')) {
-    return url.replace(/http:\/\/localhost\/word/g, WP_SITE)
-  }
-  return url
-}
-
 export default function RankingSection() {
   const [ranking, setRanking] = useState<RankingItem[]>(fallbackRanking)
-  const [isFromWP, setIsFromWP] = useState(false)
+  const [isFromDB, setIsFromDB] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -59,10 +52,9 @@ export default function RankingSection() {
     async function fetchRanking() {
       try {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 8000)
+        const timeout = setTimeout(() => controller.abort(), 5000)
 
-        // Use local API route as proxy to avoid CORS issues with ngrok
-        const res = await fetch('/api/wp/ranking?per_page=10', {
+        const res = await fetch('/api/public/ranking', {
           signal: controller.signal,
         })
 
@@ -73,25 +65,10 @@ export default function RankingSection() {
 
         if (!isMounted) return
         if (Array.isArray(data) && data.length > 0) {
-          // API route already transforms the data
-          const items: RankingItem[] = data
-            .map((item: any) => ({
-              id: item.id,
-              position: item.position || 0,
-              song: item.song || '',
-              artist: item.artist || '',
-              album: item.album || '',
-              weeks: item.weeks || 0,
-              trend: item.trend || 'same',
-              imageUrl: item.imageUrl ? replaceLocalUrl(item.imageUrl) : null,
-            }))
-            .sort((a: RankingItem, b: RankingItem) => a.position - b.position)
-
-          // Only mark as WP if we have meaningful data (not all empty)
-          const hasData = items.some(i => i.song && i.song.length > 0)
+          const hasData = data.some((i: RankingItem) => i.song && i.song.length > 0)
           if (hasData) {
-            setRanking(items)
-            setIsFromWP(true)
+            setRanking(data)
+            setIsFromDB(true)
           }
         }
       } catch {
@@ -136,11 +113,11 @@ export default function RankingSection() {
           </p>
           <div className="mt-2">
             {isLoading ? (
-              <p className="text-white/50 text-xs animate-pulse">Conectando con WordPress...</p>
-            ) : isFromWP ? (
-              <p className="text-green-300 text-xs">✓ Datos desde WordPress</p>
+              <p className="text-white/50 text-xs animate-pulse">Cargando ranking...</p>
+            ) : isFromDB ? (
+              <p className="text-green-300 text-xs">✓ Datos desde base de datos</p>
             ) : (
-              <p className="text-yellow-300 text-xs">⚠ Usando datos de respaldo (WordPress no disponible)</p>
+              <p className="text-yellow-300 text-xs">⚠ Usando datos de respaldo</p>
             )}
           </div>
         </motion.div>

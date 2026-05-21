@@ -5,49 +5,67 @@ import { motion } from 'framer-motion'
 import { ThumbsUp, MessageCircle, Share2, Clock, ExternalLink } from 'lucide-react'
 
 interface NoticiaItem {
-  id: number
+  id: string
   title: string
-  date: string
-  excerpt: string
-  image: string
+  excerpt: string | null
+  content: string | null
+  imageUrl: string | null
   author: string
-  time?: string
-  content?: string
-  likes?: number
-  comments?: number
-  shares?: number
-  hasFacebookEmbed?: boolean
-  facebookEmbedUrl?: string | null
+  facebookEmbedUrl: string | null
+  published: boolean
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
 }
 
-const fallbackNoticias: NoticiaItem[] = [
+interface NoticiasData {
+  id: string
+  subtitle: string
+  title: string
+  description: string
+  maxVisible: number
+  updatedAt: string
+  items: NoticiaItem[]
+}
+
+const fallbackItems: NoticiaItem[] = [
   {
-    id: 1,
-    time: 'Hace 2 horas',
+    id: '1',
     title: '¡NO TE LO PIERDAS! Entrevista exclusiva con la banda de rock alternativo del momento',
-    content: '🎸 Esta noche a las 8:00 PM estrenamos entrevista exclusiva con la banda de rock alternativo que está revolucionando la escena musical. Prepárate para una noche llena de rock en vivo y sorpresas. ¡Sintoniza! 🔥🎶 #RockEnVivo #RadioMiraflores',
-    image: '/images/hero-radio-studio.png',
-    likes: 245,
-    comments: 38,
-    shares: 56,
+    excerpt: '🎸 Esta noche a las 8:00 PM estrenamos entrevista exclusiva con la banda de rock alternativo que está revolucionando la escena musical. Prepárate para una noche llena de rock en vivo y sorpresas. ¡Sintoniza! 🔥🎶 #RockEnVivo #RadioMiraflores',
+    content: null,
+    imageUrl: '/images/hero-radio-studio.png',
     author: 'Radio Miraflores TV',
-    date: '',
-    excerpt: '',
+    facebookEmbedUrl: null,
+    published: true,
+    sortOrder: 0,
+    createdAt: '',
+    updatedAt: '',
   },
   {
-    id: 2,
-    time: 'Hace 5 horas',
+    id: '2',
     title: '¡NUEVO LÍDER DEL RANKING! "Bohemian Rhapsody" de Queen vuelve al #1',
-    content: '🏆 "Bohemian Rhapsody" de Queen vuelve a coronarse en el #1 de nuestro Ranking Internacional de Rock. ¿Estás de acuerdo con esta posición? ¡Comenta y comparte tu opinión! 🤘📻 #RankingRock #Queen',
-    image: '/images/hero-video-thumb.png',
-    likes: 412,
-    comments: 89,
-    shares: 127,
+    excerpt: '🏆 "Bohemian Rhapsody" de Queen vuelve a coronarse en el #1 de nuestro Ranking Internacional de Rock. ¿Estás de acuerdo con esta posición? ¡Comenta y comparte tu opinión! 🤘📻 #RankingRock #Queen',
+    content: null,
+    imageUrl: '/images/hero-video-thumb.png',
     author: 'Radio Miraflores TV',
-    date: '',
-    excerpt: '',
+    facebookEmbedUrl: null,
+    published: true,
+    sortOrder: 1,
+    createdAt: '',
+    updatedAt: '',
   },
 ]
+
+const defaultData: NoticiasData = {
+  id: 'default',
+  subtitle: 'Últimas Noticias',
+  title: 'Noticias',
+  description: 'Mantente informado de todo lo que pasa en el mundo del rock',
+  maxVisible: 2,
+  updatedAt: '',
+  items: fallbackItems,
+}
 
 function formatDate(dateStr: string): string {
   try {
@@ -67,8 +85,8 @@ function formatDate(dateStr: string): string {
 }
 
 export default function NoticiasSection() {
-  const [noticias, setNoticias] = useState<NoticiaItem[]>(fallbackNoticias)
-  const [isFromWP, setIsFromWP] = useState(false)
+  const [data, setData] = useState<NoticiasData>(defaultData)
+  const [isFromDB, setIsFromDB] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -77,39 +95,21 @@ export default function NoticiasSection() {
     async function fetchNoticias() {
       try {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 8000)
+        const timeout = setTimeout(() => controller.abort(), 5000)
 
-        // Use local API route as proxy to avoid CORS issues with ngrok
-        const res = await fetch('/api/wp/posts?per_page=6', {
+        const res = await fetch('/api/public/noticias', {
           signal: controller.signal,
         })
 
         clearTimeout(timeout)
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await res.json()
+        const json = await res.json()
 
         if (!isMounted) return
-        if (Array.isArray(data) && data.length > 0) {
-          const items: NoticiaItem[] = data.map((post: any) => ({
-            id: post.id,
-            title: post.title || 'Publicación',
-            date: post.date,
-            excerpt: post.excerpt || '',
-            content: post.excerpt || '',
-            image: post.image || '/images/hero-radio-studio.png',
-            author: post.author || 'Radio Miraflores TV',
-            hasFacebookEmbed: post.hasFacebookEmbed || false,
-            facebookEmbedUrl: post.facebookEmbedUrl || null,
-            likes: Math.floor(Math.random() * 400) + 100,
-            comments: Math.floor(Math.random() * 100) + 10,
-            shares: Math.floor(Math.random() * 150) + 20,
-          }))
-
-          if (items.length > 0) {
-            setNoticias(items)
-            setIsFromWP(true)
-          }
+        if (json && json.title) {
+          setData(json)
+          setIsFromDB(true)
         }
       } catch {
         // Keep fallback data
@@ -122,7 +122,8 @@ export default function NoticiasSection() {
     return () => { isMounted = false }
   }, [])
 
-  const displayNoticias = noticias.slice(0, 4)
+  const maxVisible = data.maxVisible || 4
+  const displayNoticias = (data.items && data.items.length > 0 ? data.items : fallbackItems).slice(0, maxVisible)
 
   return (
     <section id="noticias" className="py-20 md:py-28 bg-white">
@@ -136,27 +137,27 @@ export default function NoticiasSection() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 rounded-full mb-4">
             <MessageCircle className="w-4 h-4 text-blue-600" />
-            <span className="text-blue-600 text-sm font-medium">Últimas Noticias</span>
+            <span className="text-blue-600 text-sm font-medium">{data.subtitle}</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Noticias</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">{data.title}</h2>
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
-            Mantente informado de todo lo que pasa en el mundo del rock
+            {data.description}
           </p>
           <div className="mt-2">
             {isLoading ? (
-              <p className="text-gray-400 text-xs animate-pulse">Conectando con WordPress...</p>
-            ) : isFromWP ? (
-              <p className="text-green-500 text-xs">✓ Datos desde WordPress</p>
+              <p className="text-gray-400 text-xs animate-pulse">Cargando noticias...</p>
+            ) : isFromDB ? (
+              <p className="text-green-500 text-xs">✓ Datos desde base de datos</p>
             ) : (
-              <p className="text-yellow-500 text-xs">⚠ Usando datos de respaldo (WordPress no disponible)</p>
+              <p className="text-yellow-500 text-xs">⚠ Usando datos de respaldo</p>
             )}
           </div>
         </motion.div>
 
         <div className="space-y-6">
           {displayNoticias.map((noticia, index) => {
-            const isWP = isFromWP
-            const isFacebookPost = noticia.hasFacebookEmbed
+            const isFacebookPost = !!noticia.facebookEmbedUrl
+            const contentText = noticia.excerpt || noticia.content || ''
 
             return (
               <motion.div
@@ -185,11 +186,11 @@ export default function NoticiasSection() {
                     </div>
                     <div className="flex-1">
                       <h4 className="font-bold text-gray-900 text-sm">
-                        {isFacebookPost ? 'Radio Miraflores TV' : 'Radio Miraflores TV'}
+                        {noticia.author || 'Radio Miraflores TV'}
                       </h4>
                       <div className="flex items-center gap-1.5 text-gray-400 text-xs">
                         <Clock className="w-3 h-3" />
-                        <span>{isWP && noticia.date ? formatDate(noticia.date) : noticia.time}</span>
+                        <span>{isFromDB && noticia.createdAt ? formatDate(noticia.createdAt) : 'Hace un momento'}</span>
                         {isFacebookPost && (
                           <>
                             <span>·</span>
@@ -202,16 +203,6 @@ export default function NoticiasSection() {
                     </div>
                   </div>
                 </div>
-
-                {/* Content - Text posts */}
-                {noticia.excerpt && !isFacebookPost && (
-                  <div className="px-4 pb-3">
-                    <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {noticia.excerpt || noticia.content}
-                    </p>
-                  </div>
-                )}
 
                 {/* Content - Facebook embed posts */}
                 {isFacebookPost && noticia.facebookEmbedUrl && (
@@ -237,46 +228,35 @@ export default function NoticiasSection() {
                 {isFacebookPost && !noticia.facebookEmbedUrl && noticia.title && (
                   <div className="px-4 pb-3">
                     <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
-                    {noticia.excerpt && (
-                      <p className="text-gray-600 text-sm leading-relaxed">{noticia.excerpt}</p>
+                    {contentText && (
+                      <p className="text-gray-600 text-sm leading-relaxed">{contentText}</p>
                     )}
                   </div>
                 )}
 
-                {/* Title-only for posts without excerpt (non-Facebook) */}
-                {!isFacebookPost && !noticia.excerpt && noticia.title && (
+                {/* Content - Text posts */}
+                {!isFacebookPost && contentText && (
+                  <div className="px-4 pb-3">
+                    <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">{contentText}</p>
+                  </div>
+                )}
+
+                {/* Title-only for posts without content */}
+                {!isFacebookPost && !contentText && noticia.title && (
                   <div className="px-4 pb-3">
                     <h3 className="text-gray-800 font-semibold text-base">{noticia.title}</h3>
                   </div>
                 )}
 
-                {/* Image - only show for non-Facebook posts */}
-                {!isFacebookPost && (
+                {/* Image - only show for non-Facebook posts with an image */}
+                {!isFacebookPost && noticia.imageUrl && (
                   <div className="relative cursor-pointer group">
                     <img
-                      src={noticia.image || '/images/hero-radio-studio.png'}
+                      src={noticia.imageUrl}
                       alt={noticia.title}
                       className="w-full h-56 sm:h-72 object-cover group-hover:scale-[1.02] transition-transform duration-500"
                     />
-                  </div>
-                )}
-
-                {/* Reactions - only show for fallback data */}
-                {!isWP && (
-                  <div className="px-4 py-2.5 border-b border-gray-100">
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <span className="flex -space-x-1">
-                          <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px]">👍</span>
-                          <span className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-white text-[8px]">❤️</span>
-                        </span>
-                        <span className="ml-1">{noticia.likes}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span>{noticia.comments} comentarios</span>
-                        <span>{noticia.shares} compartidos</span>
-                      </div>
-                    </div>
                   </div>
                 )}
 

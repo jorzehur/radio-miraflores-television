@@ -1,22 +1,91 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 
+interface HeroData {
+  id: string
+  title: string
+  titleHighlight: string
+  subtitle: string
+  ctaPrimaryText: string
+  ctaPrimaryLink: string
+  ctaSecondaryText: string
+  ctaSecondaryLink: string
+  backgroundImage: string
+  overlayColor: string
+  updatedAt: string
+}
+
+const defaultHero: HeroData = {
+  id: 'default',
+  title: 'Radio',
+  titleHighlight: 'Miraflores',
+  subtitle: 'La estación de rock que mueve tu mundo',
+  ctaPrimaryText: 'Ver Ranking',
+  ctaPrimaryLink: '#ranking',
+  ctaSecondaryText: 'Últimas Noticias',
+  ctaSecondaryLink: '#noticias',
+  backgroundImage: '/images/hero-radio-studio.png',
+  overlayColor: 'from-[#B3E5FC]/85 via-[#81D4FA]/75 to-[#4FC3F7]/90',
+  updatedAt: '',
+}
+
 export default function HeroSection() {
+  const [hero, setHero] = useState<HeroData>(defaultHero)
+  const [isFromDB, setIsFromDB] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchHero() {
+      try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 5000)
+
+        const res = await fetch('/api/public/hero', {
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeout)
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+
+        if (!isMounted) return
+        if (data && data.title) {
+          setHero(data)
+          setIsFromDB(true)
+        }
+      } catch {
+        // Keep fallback data
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
+    }
+
+    fetchHero()
+    return () => { isMounted = false }
+  }, [])
+
+  // Parse overlay color classes
+  const overlayClasses = hero.overlayColor || defaultHero.overlayColor
+
   return (
     <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/hero-radio-studio.png"
+          src={hero.backgroundImage || defaultHero.backgroundImage}
           alt="Radio Miraflores Televisión - Estudio"
           fill
           className="object-cover"
           priority
         />
         {/* Celeste Claro Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#B3E5FC]/85 via-[#81D4FA]/75 to-[#4FC3F7]/90" />
+        <div className={`absolute inset-0 bg-gradient-to-b ${overlayClasses}`} />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0288D1]/20 to-transparent" />
       </div>
 
@@ -48,32 +117,43 @@ export default function HeroSection() {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white mb-4 leading-tight drop-shadow-lg">
-            Radio{' '}
+            {hero.title}{' '}
             <span className="bg-gradient-to-r from-[#8B1A2B] to-[#A63346] bg-clip-text text-transparent">
-              Miraflores
+              {hero.titleHighlight}
             </span>
             <br />
             Televisión
           </h1>
 
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto drop-shadow-md">
-            La estación de rock que mueve tu mundo 🎸🔥
+            {hero.subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href="#ranking"
+              href={hero.ctaPrimaryLink || '#ranking'}
               className="flex items-center gap-2 px-8 py-4 bg-[#8B1A2B] rounded-full text-white font-bold text-lg shadow-2xl hover:shadow-[#8B1A2B]/40 transition-all duration-300 hover:scale-105"
             >
-              Ver Ranking
+              {hero.ctaPrimaryText}
             </a>
 
             <a
-              href="#noticias"
+              href={hero.ctaSecondaryLink || '#noticias'}
               className="flex items-center gap-2 px-8 py-4 border-2 border-white/50 text-white rounded-full font-semibold text-lg hover:bg-white/15 transition-all duration-300 hover:scale-105 backdrop-blur-sm"
             >
-              Últimas Noticias
+              {hero.ctaSecondaryText}
             </a>
+          </div>
+
+          {/* DB Status indicator */}
+          <div className="mt-4">
+            {isLoading ? (
+              <p className="text-white/50 text-xs animate-pulse">Cargando...</p>
+            ) : isFromDB ? (
+              <p className="text-green-300 text-xs">✓ Datos desde base de datos</p>
+            ) : (
+              <p className="text-yellow-300 text-xs">⚠ Usando datos por defecto</p>
+            )}
           </div>
         </motion.div>
       </div>
