@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ExternalLink, Heart, MessageCircle, Repeat2, Eye } from 'lucide-react'
 import { YoutubeIcon, InstagramIcon, TwitterXIcon } from '@/components/SocialIcons'
+import { EyeOff } from 'lucide-react'
 
 interface RedSocial {
   id: string
@@ -221,9 +222,27 @@ export default function RedesSection() {
         {/* Social Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {items.map((social, index) => {
-            const styles = platformStyles[social.platform] || platformStyles.youtube
-            const IconComponent = getPlatformIcon(social.platform)
-            const label = styles.label || social.platform
+            // Si la red está oculta, mostrar solo un botón para volver a mostrarla
+            if (!social.active) {
+              return (
+                <div key={social.id || social.platform} className="flex items-center justify-center p-4 border-2 rounded-2xl bg-gray-50">
+                  <button
+                    onClick={() => {
+                      setData(prev => ({
+                        ...prev,
+                        items: prev.items.map(it => it.id === social.id ? { ...it, active: true } : it),
+                      }))
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+                  >
+                    <Eye className="w-4 h-4" /> Mostrar
+                  </button>
+                </div>
+              );
+            }
+            const styles = platformStyles[social.platform] || platformStyles.youtube;
+            const IconComponent = getPlatformIcon(social.platform);
+            const label = styles.label || social.platform;
             return (
               <motion.a
                 key={social.id || social.platform}
@@ -235,8 +254,20 @@ export default function RedesSection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.15 }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className={`${styles.bgColor} ${styles.borderColor} border-2 rounded-2xl overflow-hidden group cursor-pointer block`}
+                className={`${styles.bgColor} ${styles.borderColor} border-2 rounded-2xl overflow-hidden group cursor-pointer block relative`}
               >
+                {/* Hide button */}
+                <button
+                  onClick={() => {
+                    setData(prev => ({
+                      ...prev,
+                      items: prev.items.map(it => it.id === social.id ? { ...it, active: false } : it),
+                    }));
+                  }}
+                  className="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 rounded-full p-1"
+                >
+                  <EyeOff className="w-4 h-4" />
+                </button>
                 {/* Card Header with gradient */}
                 <div className={`bg-gradient-to-r ${styles.color} p-5 relative overflow-hidden`}>
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -266,7 +297,7 @@ export default function RedesSection() {
                 {/* Bottom bar */}
                 <div className={`h-1 bg-gradient-to-r ${styles.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left`} />
               </motion.a>
-            )
+            );
           })}
         </div>
       </div>
