@@ -41,7 +41,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 local-*
-.claude
+# .claude ignored except memory
+!.claude/memory/
 .z-ai-config
 *.log
 dev.log

@@ -1,0 +1,4 @@
+- [Identidad](identidad.md) — Define al usuario Jorge y tono colaborador.
+- [Proyecto](proyecto.md) — Descripción del proyecto Next.js con panel de administración.
+- [Calidad](calidad.md) — Regla de revisión y verificación antes de cerrar tareas.
+- [Planificación](planificacion.md) — Obligación de usar Plan Mode y preguntar antes de codificar.
