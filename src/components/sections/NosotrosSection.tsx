@@ -103,7 +103,7 @@ export default function NosotrosSection() {
   ]
 
   return (
-    <section id="nosotros" className="py-20 md:py-28 bg-gradient-to-b from-white to-[#FDF2F4]">
+    <section id="nosotros" className="py-20 md:py-28 bg-gradient-to-b from-[#FFF9F2] via-white to-[#FFF0F2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -143,7 +143,7 @@ export default function NosotrosSection() {
               >
                 <div className="poker-card-inner relative">
                   {/* Front of card */}
-                  <div className="poker-card-front relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden border border-gray-100">
+                  <div className="poker-card-front relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100">
                     {/* Card Corner - Top Left */}
                     <div className="absolute top-3 left-3 z-10 flex flex-col items-center">
                       <span className={`text-xl font-bold ${suitColor}`}>{suit}</span>
@@ -199,10 +199,14 @@ export default function NosotrosSection() {
           className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           {stats.map((stat) => (
-            <div key={stat.label} className="text-center p-4 rounded-xl bg-white shadow-sm border border-gray-50">
+            <motion.div
+              key={stat.label}
+              whileHover={{ y: -4 }}
+              className="text-center p-5 rounded-xl bg-white/80 backdrop-blur-md shadow-md border border-white hover:border-[#8B1A2B]/20 hover:shadow-lg transition-all duration-300"
+            >
               <p className="text-2xl md:text-3xl font-extrabold text-[#8B1A2B]">{stat.value}</p>
-              <p className="text-gray-500 text-sm mt-1">{stat.label}</p>
-            </div>
+              <p className="text-gray-500 text-sm mt-1 font-semibold">{stat.label}</p>
+            </motion.div>
           ))}
         </motion.div>
       </div>

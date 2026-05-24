@@ -83,12 +83,11 @@ export default function RankingSection() {
   const displayData = ranking.slice(0, 4)
 
   return (
-    <section id="ranking" className="relative py-20 md:py-28 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#8B1A2B] via-[#7A1525] to-[#6B0F1E]" />
+    <section id="ranking" className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-br from-white via-[#FFF5F6] to-[#FFF9F2]">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute -top-20 -left-20 w-80 h-80 bg-[#8B1A2B]/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-[#F5A623]/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/5 rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#8B1A2B]/5 rounded-full" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,14 +98,14 @@ export default function RankingSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-full mb-4">
-            <Flame className="w-4 h-4 text-[#FFD166]" />
-            <span className="text-white/90 text-sm font-medium">Lo más escuchado</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#8B1A2B]/10 rounded-full mb-4">
+            <Flame className="w-4 h-4 text-[#8B1A2B]" />
+            <span className="text-[#8B1A2B] text-sm font-semibold">Lo más escuchado</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
             Ranking Internacional
           </h2>
-          <p className="text-white/70 text-lg max-w-xl mx-auto">
+          <p className="text-gray-500 text-lg max-w-xl mx-auto font-medium">
             Las canciones de rock que dominan las ondas radiales esta semana
           </p>
         </motion.div>
@@ -127,7 +126,7 @@ export default function RankingSection() {
                 variants={cardVariants}
                 whileHover={{ y: -8, scale: 1.02 }}
                 transition={{ type: 'spring', stiffness: 300 }}
-                className={`${style.bgColor} ${style.borderColor} border-2 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow duration-300 group cursor-pointer`}
+                className={`${style.bgColor} ${style.borderColor} border-2 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#8B1A2B]/20 transition-all duration-300 group cursor-pointer`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${style.color} flex items-center justify-center shadow-md`}>
@@ -164,7 +163,7 @@ export default function RankingSection() {
           transition={{ delay: 0.6 }}
           className="text-center mt-10"
         >
-          <a href="#" className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white rounded-full font-semibold hover:bg-white/20 transition-all duration-300 border border-white/20">
+          <a href="#" className="inline-flex items-center gap-2 px-6 py-3 bg-[#8B1A2B]/10 text-[#8B1A2B] rounded-full font-semibold hover:bg-[#8B1A2B]/20 transition-all duration-300 border border-[#8B1A2B]/20">
             <Music className="w-4 h-4" />
             Ver Ranking Completo
           </a>

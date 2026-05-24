@@ -33,6 +33,15 @@ export default function AdminRedes() {
   async function handleDelete(id: string) { if (!confirm('¿Eliminar?')) return; await fetch(`/api/admin/redes/${id}`, { method: 'DELETE' }); loadItems() }
   async function loadItems() { const res = await fetch('/api/admin/redes'); const d = await res.json(); setItems(d?.items || []) }
 
+  async function handleToggleActive(id: string, currentActive: boolean) {
+    await fetch(`/api/admin/redes/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: !currentActive })
+    })
+    loadItems()
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -73,11 +82,31 @@ export default function AdminRedes() {
           <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4">
             <span className="text-2xl">{platformIcons[item.platform] || '🌐'}</span>
             <div className="flex-1">
-              <p className="font-semibold text-gray-900 capitalize">{item.platform} <span className="text-gray-400 font-normal text-sm">{item.username}</span></p>
+              <p className="font-semibold text-gray-900 capitalize">
+                {item.platform}{' '}
+                <span className="text-gray-400 font-normal text-sm">{item.username}</span>
+                {!item.active && (
+                  <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-bold rounded-md">
+                    Oculto
+                  </span>
+                )}
+              </p>
               <p className="text-sm text-gray-500 truncate">{item.url}</p>
               <p className="text-xs text-green-600">{item.followers}</p>
             </div>
-            <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200">Eliminar</button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => handleToggleActive(item.id, item.active)} 
+                className={`px-3 py-1.5 text-sm rounded-lg font-medium transition ${
+                  item.active 
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200/50' 
+                    : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                }`}
+              >
+                {item.active ? '👁️ Ocultar' : '👁️ Mostrar'}
+              </button>
+              <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200">Eliminar</button>
+            </div>
           </div>
         ))}
       </div>
