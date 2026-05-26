@@ -75,6 +75,7 @@ function formatDate(dateStr: string): string {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
+    if (diffMins < 1) return 'Ahora'
     if (diffMins < 60) return `Hace ${diffMins} min`
     if (diffHours < 24) return `Hace ${diffHours} horas`
     if (diffDays < 7) return `Hace ${diffDays} días`

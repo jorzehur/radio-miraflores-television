@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [pathname, router])
 
   async function handleLogout() {
-    document.cookie = 'admin_token=; path=/; max-age=0'
+    await fetch('/api/admin/auth/logout', { method: 'POST' })
     router.push('/admin/login')
   }
 

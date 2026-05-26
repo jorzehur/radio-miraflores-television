@@ -19,10 +19,10 @@ interface RankingItem {
 }
 
 const fallbackRanking: RankingItem[] = [
-  { id: '1', position: 1, song: 'Bohemian Rhapsody', artist: 'Queen', album: 'A Night at the Opera', weeks: 12, trend: 'up', active: true, createdAt: '', updatedAt: '' },
-  { id: '2', position: 2, song: 'Hotel California', artist: 'Eagles', album: 'Hotel California', weeks: 8, trend: 'up', active: true, createdAt: '', updatedAt: '' },
-  { id: '3', position: 3, song: 'Stairway to Heaven', artist: 'Led Zeppelin', album: 'Led Zeppelin IV', weeks: 15, trend: 'same', active: true, createdAt: '', updatedAt: '' },
-  { id: '4', position: 4, song: "Sweet Child O' Mine", artist: "Guns N' Roses", album: 'Appetite for Destruction', weeks: 6, trend: 'up', active: true, createdAt: '', updatedAt: '' },
+  { id: '1', position: 1, song: 'Bohemian Rhapsody', artist: 'Queen', album: 'A Night at the Opera', weeks: 12, trend: 'up', active: true, createdAt: '', updatedAt: '', imageUrl: 'https://via.placeholder.com/400x400?text=Queen+Album' },
+  { id: '2', position: 2, song: 'Hotel California', artist: 'Eagles', album: 'Hotel California', weeks: 8, trend: 'up', active: true, createdAt: '', updatedAt: '', imageUrl: 'https://via.placeholder.com/400x400?text=Eagles+Album' },
+  { id: '3', position: 3, song: 'Stairway to Heaven', artist: 'Led Zeppelin', album: 'Led Zeppelin IV', weeks: 15, trend: 'same', active: true, createdAt: '', updatedAt: '', imageUrl: 'https://via.placeholder.com/400x400?text=Led+Zeppelin+Album' },
+  { id: '4', position: 4, song: "Sweet Child O' Mine", artist: "Guns N' Roses", album: 'Appetite for Destruction', weeks: 6, trend: 'up', active: true, createdAt: '', updatedAt: '', imageUrl: 'https://via.placeholder.com/400x400?text=Guns+N+Roses+Album' },
 ]
 
 const cardStyles = [
@@ -143,6 +143,13 @@ export default function RankingSection() {
                     <span className="text-xs text-gray-500 font-medium">{item.weeks} sem.</span>
                   </div>
                 </div>
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt={`${item.album} cover`}
+                    className="w-full h-48 object-cover rounded-xl mb-3"
+                  />
+                )}
                 <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-[#8B1A2B] transition-colors line-clamp-1">
                   {item.song}
                 </h3>
