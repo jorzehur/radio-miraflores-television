@@ -1,5 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "default_agent": "forge",
   "compaction": {
     "auto": true,
     "prune": true,
@@ -12,5 +13,12 @@
   "permission": {
     "bash": "ask",
     "edit": "ask"
+  },
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp"],
+      "enabled": true
+    }
   }
 }
