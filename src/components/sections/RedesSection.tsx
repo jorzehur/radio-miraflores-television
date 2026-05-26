@@ -9,6 +9,7 @@ interface RedSocial {
   id: string
   platform: string
   url: string
+  embedUrl?: string | null
   username: string
   followers: string
   active: boolean
@@ -30,6 +31,7 @@ const defaultItems: RedSocial[] = [
     id: '1',
     platform: 'youtube',
     url: 'https://www.youtube.com/@RADIOMIRAFLORESTELEVISION',
+    embedUrl: 'https://www.youtube.com/embed/F3W_aR26Cbo?autoplay=0',
     username: '@RADIOMIRAFLORESTELEVISION',
     followers: '10K suscriptores',
     active: true,
@@ -40,6 +42,7 @@ const defaultItems: RedSocial[] = [
     id: '2',
     platform: 'instagram',
     url: 'https://www.instagram.com/radiomiraflorestelevision/',
+    embedUrl: null,
     username: '@radiomiraflorestelevision',
     followers: '25K seguidores',
     active: true,
@@ -50,6 +53,7 @@ const defaultItems: RedSocial[] = [
     id: '3',
     platform: 'twitter',
     url: 'https://x.com/Rmiraflorestv',
+    embedUrl: null,
     username: '@Rmiraflorestv',
     followers: '8K seguidores',
     active: true,
@@ -157,6 +161,119 @@ function getPlatformIcon(platform: string) {
   }
 }
 
+function isAllowedEmbedUrl(url: string | null | undefined) {
+  if (!url) return false
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
+function renderPlatformEmbed(platform: string, embedUrl: string) {
+  switch (platform) {
+    case 'youtube':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-black aspect-video border border-gray-100/50 shadow-inner">
+          <iframe
+            width="100%"
+            height="100%"
+            src={embedUrl}
+            title="Ultima publicacion en YouTube"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          ></iframe>
+        </div>
+      )
+    case 'facebook':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white p-2 border border-gray-100/50 shadow-inner flex justify-center h-[340px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none', overflow: 'hidden' }}
+            scrolling="no"
+            frameBorder="0"
+            allowFullScreen={true}
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          ></iframe>
+        </div>
+      )
+    case 'instagram':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[620px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+            allowTransparency={true}
+          ></iframe>
+        </div>
+      )
+    case 'twitter':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[620px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          ></iframe>
+        </div>
+      )
+    case 'spotify':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-black h-[152px] border border-gray-100/50 shadow-inner">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen={true}
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          ></iframe>
+        </div>
+      )
+    case 'tiktok':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[720px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          ></iframe>
+        </div>
+      )
+    default:
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[520px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+          ></iframe>
+        </div>
+      )
+  }
+}
+
 export default function RedesSection() {
   const [data, setData] = useState<RedesData>(defaultData)
   const [isLoading, setIsLoading] = useState(true)
@@ -253,8 +370,12 @@ export default function RedesSection() {
             const IconComponent = getPlatformIcon(social.platform);
             const label = styles.label || social.platform;
             const isExpanded = !!expandedSocials[social.id];
+            const hasEmbed = isAllowedEmbedUrl(social.embedUrl);
 
             const renderLatestPost = () => {
+              if (hasEmbed && social.embedUrl) {
+                return renderPlatformEmbed(social.platform, social.embedUrl);
+              }
               switch (social.platform) {
                 case 'youtube':
                   return (
@@ -432,22 +553,29 @@ export default function RedesSection() {
                   </div>
 
                   {/* Feed Connection Button */}
-                  {social.platform !== 'tiktok' && (
-                    <div className="mt-4 pt-2 border-t border-gray-100/50">
-                      <button
-                        onClick={(e) => toggleExpand(social.id, e)}
-                        className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
-                          isExpanded
-                            ? 'bg-[#8B1A2B] text-white shadow-md shadow-[#8B1A2B]/10 hover:bg-[#6B0F1E]'
-                            : 'bg-white/80 hover:bg-gray-100 text-gray-700 border border-gray-200 shadow-sm'
-                        }`}
-                      >
-                        <span className={`w-2.5 h-2.5 rounded-full ${isExpanded ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
-                        {isExpanded ? 'Desconectar publicación' : 'Conexión en vivo - Última publicación'}
-                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                      </button>
-                    </div>
-                  )}
+                  <div className="mt-4 pt-2 border-t border-gray-100/50">
+                    {hasEmbed ? (
+                      <p className="mb-2 text-[11px] font-medium text-gray-500">
+                        Vista real cargada desde la URL embed configurada en el panel.
+                      </p>
+                    ) : (
+                      <p className="mb-2 text-[11px] font-medium text-gray-500">
+                        Vista de referencia mientras configuras el embed real desde el panel.
+                      </p>
+                    )}
+                    <button
+                      onClick={(e) => toggleExpand(social.id, e)}
+                      className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                        isExpanded
+                          ? 'bg-[#8B1A2B] text-white shadow-md shadow-[#8B1A2B]/10 hover:bg-[#6B0F1E]'
+                          : 'bg-white/80 hover:bg-gray-100 text-gray-700 border border-gray-200 shadow-sm'
+                      }`}
+                    >
+                      <span className={`w-2.5 h-2.5 rounded-full ${isExpanded ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
+                      {isExpanded ? 'Ocultar vista previa' : hasEmbed ? 'Ver ultima publicacion real' : 'Ver vista de referencia'}
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Bottom bar */}

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   X, LogIn, LogOut, Save, Plus, Trash2, Edit3, ChevronRight,
   Home, Trophy, Heart, Newspaper, MessageSquare, Share2, MapPin, FileText,
-  Loader2, Check, AlertCircle, Settings
+  Loader2, Check, AlertCircle, Settings, Play, ExternalLink
 } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ interface TestimonioItem {
 }
 
 interface RedSocial {
-  id: string; platform: string; url: string; username: string
+  id: string; platform: string; url: string; embedUrl?: string | null; username: string
   followers: string; sortOrder: number
 }
 
@@ -61,6 +61,7 @@ const sections = [
   { id: 'redes', label: 'Redes', icon: Share2 },
   { id: 'info', label: 'Información', icon: MapPin },
   { id: 'footer', label: 'Footer', icon: FileText },
+  { id: 'video-ranking', label: 'Video Ranking', icon: Play },
 ]
 
 // ─── Toast ───────────────────────────────────────────────────────────────────
@@ -80,42 +81,144 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
   )
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
-export default function AdminPanel() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [activeSection, setActiveSection] = useState('hero')
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
-  const [loading, setLoading] = useState(false)
+   // ─── Main Component ──────────────────────────────────────────────────────────
+   export default function AdminPanel() {
+   const [isOpen, setIsOpen] = useState(false)
+   const [isLoggedIn, setIsLoggedIn] = useState(false)
+   const [email, setEmail] = useState('')
+   const [password, setPassword] = useState('')
+   const [activeSection, setActiveSection] = useState('hero')
+   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+   const [loading, setLoading] = useState(false)
 
-  // Data states
-  const [heroData, setHeroData] = useState<HeroData | null>(null)
-  const [rankingData, setRankingData] = useState<RankingItem[]>([])
-  const [nosotrosCards, setNosotrosCards] = useState<NosotrosCard[]>([])
-  const [noticiasData, setNoticiasData] = useState<NoticiaItem[]>([])
-  const [noticiasMaxVisible, setNoticiasMaxVisible] = useState(2)
-  const [testimoniosData, setTestimoniosData] = useState<TestimonioItem[]>([])
-  const [redesData, setRedesData] = useState<RedSocial[]>([])
-  const [infoData, setInfoData] = useState<InfoData | null>(null)
-  const [footerData, setFooterData] = useState<FooterData | null>(null)
+   // Data states
+   const [heroData, setHeroData] = useState<HeroData | null>(null)
+   const [rankingData, setRankingData] = useState<RankingItem[]>([])
+   const [nosotrosCards, setNosotrosCards] = useState<NosotrosCard[]>([])
+   const [noticiasData, setNoticiasData] = useState<NoticiaItem[]>([])
+   const [noticiasMaxVisible, setNoticiasMaxVisible] = useState(2)
+   const [testimoniosData, setTestimoniosData] = useState<TestimonioItem[]>([])
+   const [redesData, setRedesData] = useState<RedSocial[]>([])
+   const [infoData, setInfoData] = useState<InfoData | null>(null)
+   const [footerData, setFooterData] = useState<FooterData | null>(null)
+   const [videoRankingSection, setVideoRankingSection] = useState<Record<string, string>>({})
+   const [videoRankingItems, setVideoRankingItems] = useState<{ id: string; title: string; artist: string; youtubeUrl: string; videoId: string; thumbnailUrl: string | null; active: boolean; sortOrder: number }[]>([])
 
-  // New item form states
-  const [newRanking, setNewRanking] = useState({ position: 1, song: '', artist: '', album: '', weeks: 1, trend: 'up' })
-  const [newNoticia, setNewNoticia] = useState({ title: '', excerpt: '', facebookEmbedUrl: '', published: true })
-  const [newTestimonio, setNewTestimonio] = useState({ name: '', role: '', quote: '', rating: 5 })
-  const [newRed, setNewRed] = useState({ platform: 'youtube', url: '', username: '', followers: '' })
+   // New item form states
+   const [newRanking, setNewRanking] = useState({ position: 1, song: '', artist: '', album: '', weeks: 1, trend: 'up' })
+   const [newNoticia, setNewNoticia] = useState({ title: '', excerpt: '', facebookEmbedUrl: '', published: true })
+   const [newTestimonio, setNewTestimonio] = useState({ name: '', role: '', quote: '', rating: 5 })
+   const [newRed, setNewRed] = useState({ platform: 'youtube', url: '', embedUrl: '', username: '', followers: '' })
+   const [newVideoRanking, setNewVideoRanking] = useState({ title: '', artist: '', youtubeUrl: '', sortOrder: 0 })
+   const [videoRankingError, setVideoRankingError] = useState('')
+   const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
+   // Auth and data loading functions
+   async function checkAuth() {
+     try {
+       const res = await fetch('/api/admin/auth/check')
+       const data = await res.json()
+       setIsLoggedIn(data.authenticated === true)
+     } catch { /* ignore */ }
+   }
 
-  useEffect(() => {
-    if (isLoggedIn && isOpen) {
-      loadSectionData(activeSection)
-    }
-  }, [activeSection, isLoggedIn, isOpen])
+   async function loadSectionData(section: string) {
+     try {
+       switch (section) {
+         case 'hero': {
+           const res = await fetch('/api/admin/hero')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (d && d.title) setHeroData(d)
+           break
+         }
+         case 'ranking': {
+           const res = await fetch('/api/admin/ranking')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (Array.isArray(d)) setRankingData(d)
+           break
+         }
+         case 'nosotros': {
+           const res = await fetch('/api/admin/nosotros')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (d && Array.isArray(d.cards)) setNosotrosCards(d.cards)
+           break
+         }
+         case 'noticias': {
+           const res = await fetch('/api/admin/noticias')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (d) {
+             if (Array.isArray(d.items)) setNoticiasData(d.items)
+             if (d.maxVisible) setNoticiasMaxVisible(d.maxVisible)
+           }
+           break
+         }
+         case 'testimonios': {
+           const res = await fetch('/api/admin/testimonios')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (d && Array.isArray(d.items)) setTestimoniosData(d.items)
+           break
+         }
+         case 'redes': {
+           const res = await fetch('/api/admin/redes')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (d && Array.isArray(d.items)) setRedesData(d.items)
+           break
+         }
+         case 'info': {
+           const res = await fetch('/api/admin/info')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (d && d.email) setInfoData(d)
+           break
+         }
+         case 'footer': {
+           const res = await fetch('/api/admin/footer')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (d && d.description) setFooterData(d)
+           break
+         }
+         case 'video-ranking': {
+           const res = await fetch('/api/admin/video-ranking')
+           if (!res.ok) throw new Error('No autorizado')
+           const d = await res.json()
+           if (d) {
+             const { items, ...section } = d
+             setVideoRankingSection(section)
+             if (Array.isArray(items)) setVideoRankingItems(items)
+           }
+           break
+         }
+       }
+     } catch (err: any) {
+       if (err?.message === 'No autorizado') {
+         showToast('Sesión expirada. Inicia sesión nuevamente.', 'error')
+         setIsLoggedIn(false)
+       } else {
+         showToast('Error al cargar datos', 'error')
+       }
+     }
+   }
+
+   useEffect(() => {
+     (async () => {
+       await checkAuth()
+     })()
+   }, [])
+
+   useEffect(() => {
+     if (isLoggedIn && isOpen) {
+       (async () => {
+         await loadSectionData(activeSection)
+       })()
+     }
+   }, [activeSection, isLoggedIn, isOpen])
 
   async function checkAuth() {
     try {
@@ -219,6 +322,17 @@ export default function AdminPanel() {
           if (!res.ok) throw new Error('No autorizado')
           const d = await res.json()
           if (d && d.description) setFooterData(d)
+          break
+        }
+        case 'video-ranking': {
+          const res = await fetch('/api/admin/video-ranking')
+          if (!res.ok) throw new Error('No autorizado')
+          const d = await res.json()
+          if (d) {
+            const { items, ...section } = d
+            setVideoRankingSection(section)
+            if (Array.isArray(items)) setVideoRankingItems(items)
+          }
           break
         }
       }
@@ -364,7 +478,7 @@ export default function AdminPanel() {
     if (res.ok) {
       const item = await res.json()
       setRedesData([...redesData, item])
-      setNewRed({ platform: 'youtube', url: '', username: '', followers: '' })
+      setNewRed({ platform: 'youtube', url: '', embedUrl: '', username: '', followers: '' })
       showToast('Red social agregada', 'success')
     } else {
       showToast('Error al agregar', 'error')
@@ -389,6 +503,99 @@ export default function AdminPanel() {
     if (!footerData) return
     const ok = await apiPut('/api/admin/footer', footerData)
     showToast(ok ? 'Footer guardado' : 'Error al guardar', ok ? 'success' : 'error')
+  }
+
+  function extractYouTubeVideoId(input: string) {
+    if (!input) return null
+    const trimmed = input.trim()
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed
+    try {
+      const url = new URL(trimmed)
+      if (url.hostname.includes('youtu.be')) {
+        const id = url.pathname.replace('/', '')
+        return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null
+      }
+      if (url.hostname.includes('youtube.com')) {
+        const watchId = url.searchParams.get('v')
+        if (watchId && /^[a-zA-Z0-9_-]{11}$/.test(watchId)) return watchId
+        const parts = url.pathname.split('/').filter(Boolean)
+        const candidate = parts[1] && ['embed', 'shorts', 'live'].includes(parts[0]) ? parts[1] : null
+        if (candidate && /^[a-zA-Z0-9_-]{11}$/.test(candidate)) return candidate
+      }
+    } catch { /* ignore */ }
+    return null
+  }
+
+  function buildYouTubeThumbnail(videoId: string) {
+    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+  }
+
+  async function saveVideoRankingSection() {
+    const ok = await apiPut('/api/admin/video-ranking', videoRankingSection)
+    showToast(ok ? 'Sección guardada' : 'Error al guardar', ok ? 'success' : 'error')
+  }
+
+  async function saveVideoRankingItems() {
+    for (const item of videoRankingItems) {
+      await apiPut(`/api/admin/video-ranking/${item.id}`, item)
+    }
+    showToast('Videos guardados', 'success')
+  }
+
+  async function addVideoRankingItem() {
+    const videoId = extractYouTubeVideoId(newVideoRanking.youtubeUrl)
+    if (!videoId) {
+      setVideoRankingError('URL de YouTube no válida')
+      return
+    }
+    setVideoRankingError('')
+    const res = await apiPost('/api/admin/video-ranking', { ...newVideoRanking, active: true })
+    if (res.ok) {
+      const item = await res.json()
+      setVideoRankingItems([...videoRankingItems, item])
+      setNewVideoRanking({ title: '', artist: '', youtubeUrl: '', sortOrder: videoRankingItems.length + 1 })
+      showToast('Video agregado', 'success')
+    } else {
+      const body = await res.json().catch(() => null)
+      setVideoRankingError(body?.error || 'Error al agregar video')
+    }
+  }
+
+  async function deleteVideoRankingItem(id: string) {
+    const ok = await apiDelete(`/api/admin/video-ranking/${id}`)
+    if (ok) {
+      setVideoRankingItems(videoRankingItems.filter(item => item.id !== id))
+      showToast('Video eliminado', 'success')
+    }
+  }
+
+  async function toggleVideoRankingActive(id: string, currentActive: boolean) {
+    const ok = await apiPut(`/api/admin/video-ranking/${id}`, { active: !currentActive })
+    if (ok) {
+      setVideoRankingItems(videoRankingItems.map(item => item.id === id ? { ...item, active: !currentActive } : item))
+    }
+  }
+
+  async function downloadVideo(id: string) {
+    setDownloadingId(id)
+    const res = await fetch('/api/admin/video-ranking/download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    const data = await res.json()
+    if (data.success) {
+      setVideoRankingItems(videoRankingItems.map(item =>
+        item.id === id ? { ...item, hlsUrl: data.hlsUrl, downloadStatus: 'ready' } : item
+      ))
+      showToast('Video descargado y convertido a HLS', 'success')
+    } else {
+      setVideoRankingItems(videoRankingItems.map(item =>
+        item.id === id ? { ...item, downloadStatus: 'failed', downloadError: data.error } : item
+      ))
+      showToast(data.error || 'Error al descargar', 'error')
+    }
+    setDownloadingId(null)
   }
 
   // ─── Input helper ─────────────────────────────────────────────────────────
@@ -591,7 +798,7 @@ export default function AdminPanel() {
                   </div>
                   <textarea value={item.quote} onChange={e => {
                     const u = [...testimoniosData]; u[i] = { ...u[i], quote: e.target.value }; setTestimoniosData(u)
-                  }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" rows={3} placeholder="Cita" />
+                  }} className="w-full max-w-[500px] px-2 py-1.5 bg-white border border-gray-200 rounded text-sm whitespace-pre-wrap" rows={3} placeholder="Cita" />
                 </div>
               ))}
             </div>
@@ -632,6 +839,9 @@ export default function AdminPanel() {
                       const u = [...redesData]; u[i] = { ...u[i], username: e.target.value }; setRedesData(u)
                     }} className="px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="Usuario" />
                   </div>
+                  <input value={item.embedUrl || ''} onChange={e => {
+                    const u = [...redesData]; u[i] = { ...u[i], embedUrl: e.target.value || null }; setRedesData(u)
+                  }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="URL embed / iframe (opcional)" />
                   <input value={item.followers} onChange={e => {
                     const u = [...redesData]; u[i] = { ...u[i], followers: e.target.value }; setRedesData(u)
                   }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="Seguidores" />
@@ -649,6 +859,7 @@ export default function AdminPanel() {
                 <option value="spotify">Spotify</option>
               </select>
               <input value={newRed.url} onChange={e => setNewRed({ ...newRed, url: e.target.value })} className="w-full px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="URL" />
+              <input value={newRed.embedUrl} onChange={e => setNewRed({ ...newRed, embedUrl: e.target.value })} className="w-full px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="URL embed / iframe (opcional)" />
               <div className="grid grid-cols-2 gap-2">
                 <input value={newRed.username} onChange={e => setNewRed({ ...newRed, username: e.target.value })} className="px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="Usuario" />
                 <input value={newRed.followers} onChange={e => setNewRed({ ...newRed, followers: e.target.value })} className="px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="Seguidores" />
@@ -691,6 +902,99 @@ export default function AdminPanel() {
             </button>
           </div>
         ) : <p className="text-gray-400 text-sm">Cargando...</p>
+
+      case 'video-ranking':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
+              <p className="text-xs font-semibold text-[#8B1A2B]">Configuración de la sección</p>
+              {['subtitle', 'title', 'description', 'ctaText', 'ctaLink'].map(key => (
+                <div key={key}>
+                  <label className="mb-1 block text-xs font-medium text-gray-500 capitalize">{key === 'ctaText' ? 'Texto del botón' : key === 'ctaLink' ? 'Enlace del botón' : key}</label>
+                  <input
+                    type="text"
+                    value={videoRankingSection[key] || ''}
+                    onChange={e => setVideoRankingSection({ ...videoRankingSection, [key]: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none"
+                  />
+                </div>
+              ))}
+              <button onClick={saveVideoRankingSection} className="w-full py-2 bg-[#8B1A2B] text-white rounded-lg text-sm font-semibold hover:bg-[#6B0F1E] transition-colors flex items-center justify-center gap-1">
+                <Save className="w-4 h-4" /> Guardar sección
+              </button>
+            </div>
+
+            <p className="text-xs font-semibold text-[#8B1A2B]">Videos ({videoRankingItems.length})</p>
+
+            <div className="space-y-3">
+              {videoRankingItems.map((item, i) => (
+                <div key={item.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-[#8B1A2B]">#{i + 1}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded ${item.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {item.active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => toggleVideoRankingActive(item.id, item.active)} className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                        {item.active ? 'Ocultar' : 'Mostrar'}
+                      </button>
+                      <button onClick={() => deleteVideoRankingItem(item.id)} className="text-red-400 hover:text-red-600 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    {item.thumbnailUrl && (
+                      <img src={item.thumbnailUrl} alt={item.title} className="w-20 h-14 rounded-lg object-cover flex-shrink-0" />
+                    )}
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <input value={item.title} onChange={e => {
+                        const u = [...videoRankingItems]; u[i] = { ...u[i], title: e.target.value }; setVideoRankingItems(u)
+                      }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="Título" />
+                      <input value={item.artist} onChange={e => {
+                        const u = [...videoRankingItems]; u[i] = { ...u[i], artist: e.target.value }; setVideoRankingItems(u)
+                      }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="Artista" />
+                    </div>
+                  </div>
+                  <input value={item.youtubeUrl} onChange={e => {
+                    const u = [...videoRankingItems]; u[i] = { ...u[i], youtubeUrl: e.target.value }; setVideoRankingItems(u)
+                  }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="URL de YouTube" />
+                  <div className="flex gap-2">
+                    <button onClick={saveVideoRankingItems} className="flex-1 py-2 bg-[#8B1A2B] text-white rounded-lg text-sm font-semibold hover:bg-[#6B0F1E] transition-colors flex items-center justify-center gap-1">
+                      <Save className="w-4 h-4" /> Guardar
+                    </button>
+                    {item.hlsUrl && item.hlsUrl.startsWith('/videos/') ? (
+                      <button disabled className="flex-1 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-semibold cursor-default">
+                        HLS listo
+                      </button>
+                    ) : downloadingId === item.id ? (
+                      <button disabled className="flex-1 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-semibold cursor-default">
+                        <Loader2 className="w-4 h-4 inline animate-spin mr-1" />Convirtiendo...
+                      </button>
+                    ) : (
+                      <button onClick={() => downloadVideo(item.id)} className="flex-1 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors">
+                        Descargar HLS
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+              <p className="text-xs font-semibold text-blue-700">Agregar video</p>
+              <input value={newVideoRanking.title} onChange={e => setNewVideoRanking({ ...newVideoRanking, title: e.target.value })} className="w-full px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="Título del video" />
+              <input value={newVideoRanking.artist} onChange={e => setNewVideoRanking({ ...newVideoRanking, artist: e.target.value })} className="w-full px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="Artista / Canal" />
+              <input value={newVideoRanking.youtubeUrl} onChange={e => setNewVideoRanking({ ...newVideoRanking, youtubeUrl: e.target.value })} className="w-full px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="URL de YouTube" />
+              {videoRankingError && <p className="text-xs font-medium text-red-600">{videoRankingError}</p>}
+              <button onClick={addVideoRankingItem} className="w-full py-2 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1">
+                <Plus className="w-3 h-3" /> Agregar
+              </button>
+            </div>
+          </div>
+        )
 
       default:
         return null

@@ -41,6 +41,35 @@ model HeroSection {
 }
 
 // ============================================================
+// SECCIÓN 1.5: VIDEO RANKING
+// ============================================================
+model VideoRankingSection {
+  id          String   @id @default(cuid())
+  subtitle    String   @default("Ranking en video")
+  title       String   @default("Video Ranking")
+  description String   @default("Una programacion continua con los videos de YouTube que mas suenan en Radio Miraflores")
+  ctaText     String   @default("Abrir canal en YouTube")
+  ctaLink     String   @default("https://www.youtube.com/")
+  updatedAt   DateTime @updatedAt
+}
+
+model VideoRankingItem {
+  id              String   @id @default(cuid())
+  title           String
+  artist          String   @default("")
+  youtubeUrl      String
+  videoId         String
+  thumbnailUrl    String?
+  active          Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  hlsUrl          String?
+  downloadStatus  String   @default("none")
+  downloadError   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================================
 // SECCIÓN 2: RANKING INTERNACIONAL
 // ============================================================
 model RankingItem {
@@ -153,6 +182,7 @@ model RedSocial {
   id          String   @id @default(cuid())
   platform    String   // facebook, instagram, tiktok, youtube, twitter, etc.
   url         String   // Link a la red social
+  embedUrl    String?  // URL de embed/iframe para mostrar la ultima publicacion
   username    String   @default("") // @radiomiraflores
   followers   String   @default("") // "50K", "10K", etc.
   active      Boolean  @default(true)

@@ -54,40 +54,40 @@ export default function AdminTestimonios() {
   async function loadItems() { const res = await fetch('/api/admin/testimonios'); const d = await res.json(); setItems(d?.items || []) }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-w-0">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900">💬 Testimonios</h1>
         <button onClick={handleSaveSection} disabled={saving} className="px-6 py-2 bg-[#8B1A2B] text-white rounded-lg font-medium hover:bg-[#6B0F1E] transition disabled:opacity-50">
           {saving ? 'Guardando...' : saved ? '✓ Guardado!' : 'Guardar'}
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 space-y-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 space-y-4 w-full max-w-full overflow-hidden">
         {['subtitle', 'title', 'description'].map(key => (
-          <div key={key}>
+          <div key={key} className="min-w-0">
             <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">{key === 'subtitle' ? 'Subtítulo' : key === 'title' ? 'Título' : 'Descripción'}</label>
-            <input type="text" value={section[key] || ''} onChange={e => setSection({...section, [key]: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" />
+            <input type="text" value={section[key] || ''} onChange={e => setSection({...section, [key]: e.target.value})} className="w-full min-w-0 px-4 py-2.5 border rounded-lg outline-none" />
           </div>
         ))}
       </div>
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h3 className="font-semibold text-gray-700">Testimonios ({items.length})</h3>
         <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-[#8B1A2B] text-white rounded-lg font-medium text-sm hover:bg-[#6B0F1E]">{showForm ? 'Cancelar' : '+ Agregar'}</button>
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label><input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Rol</label><input type="text" value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" placeholder="Oyente desde 2005" /></div>
-            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Testimonio</label><textarea value={form.quote} onChange={e => setForm({...form, quote: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" rows={3} /></div>
-            <div className="md:col-span-2">
+        <div className="mb-4 w-full max-w-full overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+          <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-6">
+            <div className="min-w-0 md:col-span-3"><label className="mb-1 block text-sm font-medium text-gray-700">Nombre</label><input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full min-w-0 rounded-lg border px-4 py-2.5 outline-none" /></div>
+            <div className="min-w-0 md:col-span-3"><label className="mb-1 block text-sm font-medium text-gray-700">Rol</label><input type="text" value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="w-full min-w-0 rounded-lg border px-4 py-2.5 outline-none" placeholder="Oyente desde 2005" /></div>
+            <div className="min-w-0 md:col-span-6"><label className="mb-1 block text-sm font-medium text-gray-700">Testimonio</label><textarea value={form.quote} onChange={e => setForm({...form, quote: e.target.value})} className="w-full min-w-0 rounded-lg border px-4 py-2.5 outline-none" rows={3} /></div>
+            <div className="min-w-0 md:col-span-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Foto</label>
-              <div className="flex gap-2">
-                <input type="text" value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} className="flex-1 px-4 py-2.5 border rounded-lg outline-none" placeholder="/images/uploads/... o pega una URL" />
+              <div className="flex flex-col gap-2 min-w-0 sm:flex-row">
+                <input type="text" value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} className="flex-1 min-w-0 px-4 py-2.5 border rounded-lg outline-none" placeholder="/images/uploads/... o pega una URL" />
                 <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={async e => { const f = e.target.files?.[0]; if (f) { const url = await handleUpload(f); if (url) setForm(prev => ({ ...prev, imageUrl: url })); } e.target.value = '' }} />
-                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-200 border transition disabled:opacity-50 cursor-pointer">
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-200 border transition whitespace-nowrap disabled:opacity-50 cursor-pointer sm:self-auto self-start">
                   {uploading ? 'Subiendo...' : 'Subir'}
                 </button>
               </div>
@@ -95,52 +95,100 @@ export default function AdminTestimonios() {
                 <img src={form.imageUrl} alt="Preview" className="mt-2 h-24 w-24 rounded-full object-cover border border-gray-100" />
               )}
             </div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">Rating (1-5)</label><input type="number" min={1} max={5} value={form.rating} onChange={e => setForm({...form, rating: +e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" /></div>
+            <div className="min-w-0 md:col-span-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] md:grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto]">
+                <div className="min-w-0">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Rating (1-5)</label>
+                  <input type="number" min={1} max={5} value={form.rating} onChange={e => setForm({...form, rating: +e.target.value})} className="w-full min-w-0 rounded-lg border px-4 py-2.5 outline-none" />
+                </div>
+                <button onClick={handleCreate} className="self-end px-6 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition whitespace-nowrap">Crear</button>
+              </div>
+            </div>
           </div>
-          <button onClick={handleCreate} className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Crear</button>
         </div>
       )}
 
-      <div className="space-y-3">
-        {items.map(item => (
-          <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4">
-            {editing === item.id ? (
-              <>
-                <div className="grid grid-cols-2 gap-2 flex-1">
-                  <input type="text" defaultValue={item.name} onChange={e => item.name = e.target.value} className="px-3 py-1.5 border rounded-lg text-sm" placeholder="Nombre" />
-                  <input type="text" defaultValue={item.role} onChange={e => item.role = e.target.value} className="px-3 py-1.5 border rounded-lg text-sm" placeholder="Rol" />
-                  <textarea defaultValue={item.quote} onChange={e => item.quote = e.target.value} className="col-span-2 px-3 py-1.5 border rounded-lg text-sm" rows={2} placeholder="Testimonio" />
-                  <div className="col-span-2 flex gap-2">
-                    <input type="text" defaultValue={item.imageUrl || ''} onChange={e => item.imageUrl = e.target.value} className="flex-1 px-3 py-1.5 border rounded-lg text-sm" placeholder="URL foto" />
-                    <input type="file" ref={editFileInputRef} accept="image/*" className="hidden" onChange={async e => { const f = e.target.files?.[0]; if (f) { const url = await handleUpload(f); if (url) item.imageUrl = url; } e.target.value = '' }} />
-                    <button type="button" onClick={() => editFileInputRef.current?.click()} disabled={uploading} className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 border transition disabled:opacity-50 cursor-pointer">
-                      Subir
-                    </button>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Rating</label>
-                    <input type="number" min={1} max={5} defaultValue={item.rating} onChange={e => item.rating = +e.target.value} className="w-full px-3 py-1.5 border rounded-lg text-sm" />
-                  </div>
-                </div>
-                <button onClick={() => handleUpdate(item.id, { name: item.name, role: item.role, quote: item.quote, imageUrl: item.imageUrl, rating: item.rating })} className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">✓</button>
-              </>
-            ) : (
-              <>
-                {item.imageUrl && (
-                  <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900">{item.name} <span className="text-gray-400 font-normal text-sm">· {item.role}</span></p>
-                  <p className="text-sm text-gray-500 truncate">{item.quote}</p>
-                  <p className="text-xs text-yellow-500 mt-1">{'★'.repeat(item.rating)}</p>
-                </div>
-                <button onClick={() => setEditing(item.id)} className="px-3 py-1.5 bg-blue-100 text-blue-700 text-sm rounded-lg hover:bg-blue-200">Editar</button>
-                <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200">Eliminar</button>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
+       <div className="space-y-3">
+         {items.map((item, index) => (
+           <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 w-full max-w-full overflow-hidden">
+             {editing === item.id ? (
+                 <div className="space-y-3">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+                     <div className="min-w-0">
+                       <input type="text" value={item.name} onChange={e => {
+                         const updatedItems = [...items];
+                         updatedItems[index] = { ...updatedItems[index], name: e.target.value };
+                         setItems(updatedItems);
+                       }} className="w-full min-w-0 px-3 py-1.5 border rounded-lg text-sm" placeholder="Nombre" />
+                     </div>
+                     <div className="min-w-0">
+                       <input type="text" value={item.role} onChange={e => {
+                         const updatedItems = [...items];
+                         updatedItems[index] = { ...updatedItems[index], role: e.target.value };
+                         setItems(updatedItems);
+                       }} className="w-full min-w-0 px-3 py-1.5 border rounded-lg text-sm" placeholder="Rol" />
+                     </div>
+                     <div className="sm:col-span-2 min-w-0">
+                       <textarea value={item.quote} onChange={e => {
+                         const updatedItems = [...items];
+                         updatedItems[index] = { ...updatedItems[index], quote: e.target.value };
+                         setItems(updatedItems);
+                       }} className="w-full min-w-0 px-3 py-1.5 border rounded-lg text-sm" rows={2} placeholder="Testimonio" />
+                     </div>
+                     <div className="sm:col-span-2 min-w-0">
+                       <div className="flex flex-col gap-2 min-w-0 sm:flex-row">
+                         <input type="text" value={item.imageUrl || ''} onChange={e => {
+                           const updatedItems = [...items];
+                           updatedItems[index] = { ...updatedItems[index], imageUrl: e.target.value };
+                           setItems(updatedItems);
+                         }} className="flex-1 min-w-0 px-3 py-1.5 border rounded-lg text-sm" placeholder="URL foto" />
+                         <input type="file" ref={editFileInputRef} accept="image/*" className="hidden" onChange={async e => { const f = e.target.files?.[0]; if (f) { const url = await handleUpload(f); if (url) {
+                           const updatedItems = [...items];
+                           updatedItems[index] = { ...updatedItems[index], imageUrl: url };
+                           setItems(updatedItems);
+                         } } e.target.value = '' }} />
+                         <button type="button" onClick={() => editFileInputRef.current?.click()} disabled={uploading} className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 border transition whitespace-nowrap disabled:opacity-50 cursor-pointer sm:self-auto self-start">
+                           Subir
+                         </button>
+                       </div>
+                     </div>
+                     <div className="min-w-0">
+                       <label className="block text-xs text-gray-500 mb-1">Rating</label>
+                       <input type="number" min={1} max={5} value={item.rating} onChange={e => {
+                         const updatedItems = [...items];
+                         updatedItems[index] = { ...updatedItems[index], rating: +e.target.value };
+                         setItems(updatedItems);
+                       }} className="w-full min-w-0 px-3 py-1.5 border rounded-lg text-sm" />
+                     </div>
+                   </div>
+                 <div className="flex flex-wrap justify-end gap-2">
+                   <button onClick={() => setEditing(null)} className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200">Cancelar</button>
+                   <button onClick={() => handleUpdate(item.id, { name: item.name, role: item.role, quote: item.quote, imageUrl: item.imageUrl, rating: item.rating })} className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">Guardar</button>
+                 </div>
+               </div>
+             ) : (
+               <div className="flex w-full max-w-full flex-col gap-4 overflow-hidden sm:flex-row sm:items-start">
+                 {item.imageUrl ? (
+                   <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0 mt-0.5" />
+                 ) : (
+                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8B1A2B] to-[#A63346] flex items-center justify-center flex-shrink-0 mt-0.5">
+                     <span className="text-white font-bold text-xs">{item.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}</span>
+                   </div>
+                 )}
+                 <div className="flex-1 min-w-0">
+                   <p className="font-semibold text-gray-900 break-words">{item.name} <span className="text-gray-400 font-normal text-sm break-words">· {item.role}</span></p>
+                   <p className="text-sm text-gray-500 break-words">{item.quote}</p>
+                   <p className="text-xs text-yellow-500 mt-1">{'★'.repeat(item.rating)}</p>
+                 </div>
+                 <div className="flex flex-wrap gap-2 flex-shrink-0 sm:justify-end">
+                   <button onClick={() => setEditing(item.id)} className="px-3 py-1.5 bg-blue-100 text-blue-700 text-sm rounded-lg hover:bg-blue-200 whitespace-nowrap">Editar</button>
+                   <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 whitespace-nowrap">Eliminar</button>
+                 </div>
+               </div>
+             )}
+           </div>
+         ))}
+       </div>
     </div>
   )
 }

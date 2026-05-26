@@ -1,5 +1,6 @@
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/sections/HeroSection'
+import VideoRankingSection from '@/components/sections/VideoRankingSection'
 import RankingSection from '@/components/sections/RankingSection'
 import NosotrosSection from '@/components/sections/NosotrosSection'
 import NoticiasSection from '@/components/sections/NoticiasSection'
@@ -17,6 +18,7 @@ export default function Home() {
       <Navbar />
       <main className="flex-1">
         <HeroSection />
+        <VideoRankingSection />
         <RankingSection />
         <NosotrosSection />
         <NoticiasSection />

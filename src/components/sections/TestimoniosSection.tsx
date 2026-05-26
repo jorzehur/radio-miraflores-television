@@ -146,14 +146,15 @@ export default function TestimoniosSection() {
                 className="relative group"
               >
                 <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl hover:shadow-2xl hover:border-[#8B1A2B]/15 transition-all duration-300 overflow-hidden border border-white hover:-translate-y-1">
-                  <div className="flex flex-col sm:flex-row">
+                  <div className="flex flex-col sm:flex-row overflow-hidden">
                     {/* Image Side */}
-                    <div className="relative w-full sm:w-48 h-48 sm:h-auto flex-shrink-0 overflow-hidden">
+                    <div className="relative w-full sm:w-48 h-48 sm:h-48 flex-shrink-0">
                       {testimonio.imageUrl ? (
                         <Image
                           src={testimonio.imageUrl}
                           alt={testimonio.name}
                           fill
+                          sizes="(max-width: 640px) 100vw, 192px"
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       ) : (
@@ -167,7 +168,7 @@ export default function TestimoniosSection() {
                     </div>
 
                     {/* Content Side */}
-                    <div className="flex-1 p-5 md:p-6">
+                    <div className="flex-1 min-w-0 p-5 md:p-6">
                       {/* Quote Icon */}
                       <Quote className="w-8 h-8 text-[#8B1A2B]/20 mb-3" />
 

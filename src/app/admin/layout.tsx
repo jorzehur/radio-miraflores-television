@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: '🏠' },
   { href: '/admin/hero', label: 'Hero', icon: '🎬' },
+  { href: '/admin/video-ranking', label: 'Video Ranking', icon: '📺' },
   { href: '/admin/ranking', label: 'Ranking', icon: '🏆' },
   { href: '/admin/nosotros', label: 'Nosotros', icon: '❤️' },
   { href: '/admin/noticias', label: 'Noticias', icon: '📰' },
@@ -22,23 +23,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter()
   const pathname = usePathname()
 
-  useEffect(() => {
-    if (pathname === '/admin/login') {
-      setLoading(false)
-      return
-    }
-    fetch('/api/admin/auth/check')
-      .then(res => res.json())
-      .then(data => {
-        if (data.authenticated) {
-          setAuthenticated(true)
-        } else {
-          router.push('/admin/login')
-        }
-      })
-      .catch(() => router.push('/admin/login'))
-      .finally(() => setLoading(false))
-  }, [pathname, router])
+   useEffect(() => {
+     if (pathname === '/admin/login') {
+       setLoading(false);
+       return;
+     }
+     
+     fetch('/api/admin/auth/check')
+       .then(res => res.json())
+       .then(data => {
+         if (data.authenticated) {
+           setAuthenticated(true);
+         } else {
+           router.push('/admin/login');
+         }
+       })
+       .catch(() => router.push('/admin/login'))
+       .finally(() => {
+         setLoading(false);
+       });
+   }, [pathname, router]);
 
   async function handleLogout() {
     await fetch('/api/admin/auth/logout', { method: 'POST' })
@@ -60,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!authenticated) return null
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gray-100 flex overflow-x-hidden">
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-gradient-to-b from-[#8B1A2B] to-[#6B0F1E] text-white transition-all duration-300 flex flex-col min-h-screen fixed left-0 top-0 z-40`}>
         <div className="p-4 border-b border-white/10">
@@ -106,8 +110,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main content */}
-      <main className={`${sidebarOpen ? 'ml-64' : 'ml-16'} flex-1 transition-all duration-300`}>
-        <header className="bg-white shadow-sm px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+      <main className={`${sidebarOpen ? 'ml-64' : 'ml-16'} min-w-0 flex-1 transition-all duration-300`}>
+        <header className="bg-white shadow-sm px-4 py-3 sm:px-6 flex min-w-0 items-center justify-between gap-3 sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="text-gray-500 hover:text-gray-700 text-xl"
@@ -119,7 +123,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </h2>
           <div />
         </header>
-        <div className="p-6">
+        <div className="min-w-0 p-4 sm:p-6">
           {children}
         </div>
       </main>

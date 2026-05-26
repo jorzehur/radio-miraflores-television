@@ -123,42 +123,66 @@ export default function AdminNosotros() {
       )}
 
       <div className="space-y-3">
-        {cards.map(card => (
-          <div key={card.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4">
-            {editing === card.id ? (
-              <>
-                <div className="grid grid-cols-2 gap-2 flex-1">
-                  <input type="text" defaultValue={card.year} onChange={e => card.year = e.target.value} className="px-3 py-1.5 border rounded-lg text-sm" placeholder="Año" />
-                  <input type="text" defaultValue={card.title} onChange={e => card.title = e.target.value} className="px-3 py-1.5 border rounded-lg text-sm" placeholder="Título" />
-                  <textarea defaultValue={card.description} onChange={e => card.description = e.target.value} className="col-span-2 px-3 py-1.5 border rounded-lg text-sm" rows={2} placeholder="Descripción" />
-                  <div className="col-span-2 flex gap-2">
-                    <input type="text" defaultValue={card.imageUrl} onChange={e => card.imageUrl = e.target.value} className="flex-1 px-3 py-1.5 border rounded-lg text-sm" placeholder="URL imagen" />
-                    <input type="file" ref={editFileInputRef} accept="image/*" className="hidden" onChange={async e => { const f = e.target.files?.[0]; if (f) { const url = await handleUpload(f); if (url) card.imageUrl = url; } e.target.value = '' }} />
-                    <button type="button" onClick={() => editFileInputRef.current?.click()} disabled={uploading} className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 border transition disabled:opacity-50 cursor-pointer">
-                      Subir
-                    </button>
-                  </div>
-                  <select defaultValue={card.icon} onChange={e => card.icon = e.target.value} className="px-3 py-1.5 border rounded-lg text-sm">
-                    <option value="radio">Radio</option><option value="mic">Micrófono</option><option value="headphones">Auriculares</option><option value="heart">Corazón</option>
-                  </select>
-                </div>
-                <button onClick={() => handleUpdateCard(card.id, { year: card.year, title: card.title, description: card.description, imageUrl: card.imageUrl, icon: card.icon })} className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">✓</button>
-              </>
-            ) : (
-              <>
-                {card.imageUrl && (
-                  <img src={card.imageUrl} alt={card.title} className="w-12 h-12 rounded-lg object-cover border border-gray-100 flex-shrink-0" />
-                )}
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900">{card.title}</p>
-                  <p className="text-sm text-gray-500 truncate">{card.description}</p>
-                </div>
-                <button onClick={() => setEditing(card.id)} className="px-3 py-1.5 bg-blue-100 text-blue-700 text-sm rounded-lg hover:bg-blue-200">Editar</button>
-                <button onClick={() => handleDeleteCard(card.id)} className="px-3 py-1.5 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200">Eliminar</button>
-              </>
-            )}
-          </div>
-        ))}
+         {cards.map((card, index) => (
+           <div key={card.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4">
+             {editing === card.id ? (
+               <>
+                 <div className="grid grid-cols-2 gap-2 flex-1">
+                   <input type="text" value={card.year} onChange={e => {
+                     const updatedCards = [...cards];
+                     updatedCards[index] = { ...updatedCards[index], year: e.target.value };
+                     setCards(updatedCards);
+                   }} className="px-3 py-1.5 border rounded-lg text-sm" placeholder="Año" />
+                   <input type="text" value={card.title} onChange={e => {
+                     const updatedCards = [...cards];
+                     updatedCards[index] = { ...updatedCards[index], title: e.target.value };
+                     setCards(updatedCards);
+                   }} className="px-3 py-1.5 border rounded-lg text-sm" placeholder="Título" />
+                   <textarea value={card.description} onChange={e => {
+                     const updatedCards = [...cards];
+                     updatedCards[index] = { ...updatedCards[index], description: e.target.value };
+                     setCards(updatedCards);
+                   }} className="col-span-2 px-3 py-1.5 border rounded-lg text-sm" rows={2} placeholder="Descripción" />
+                   <div className="col-span-2 flex gap-2">
+                     <input type="text" value={card.imageUrl} onChange={e => {
+                       const updatedCards = [...cards];
+                       updatedCards[index] = { ...updatedCards[index], imageUrl: e.target.value };
+                       setCards(updatedCards);
+                     }} className="flex-1 px-3 py-1.5 border rounded-lg text-sm" placeholder="URL imagen" />
+                     <input type="file" ref={editFileInputRef} accept="image/*" className="hidden" onChange={async e => { const f = e.target.files?.[0]; if (f) { const url = await handleUpload(f); if (url) {
+                       const updatedCards = [...cards];
+                       updatedCards[index] = { ...updatedCards[index], imageUrl: url };
+                       setCards(updatedCards);
+                     } } e.target.value = '' }} />
+                     <button type="button" onClick={() => editFileInputRef.current?.click()} disabled={uploading} className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 border transition disabled:opacity-50 cursor-pointer">
+                       Subir
+                     </button>
+                   </div>
+                   <select value={card.icon} onChange={e => {
+                     const updatedCards = [...cards];
+                     updatedCards[index] = { ...updatedCards[index], icon: e.target.value };
+                     setCards(updatedCards);
+                   }} className="px-3 py-1.5 border rounded-lg text-sm">
+                     <option value="radio">Radio</option><option value="mic">Micrófono</option><option value="headphones">Auriculares</option><option value="heart">Corazón</option>
+                   </select>
+                 </div>
+                 <button onClick={() => handleUpdateCard(card.id, { year: card.year, title: card.title, description: card.description, imageUrl: card.imageUrl, icon: card.icon })} className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">✓</button>
+               </>
+             ) : (
+               <>
+                 {card.imageUrl && (
+                   <img src={card.imageUrl} alt={card.title} className="w-12 h-12 rounded-lg object-cover border border-gray-100 flex-shrink-0" />
+                 )}
+                 <div className="flex-1">
+                   <p className="font-semibold text-gray-900">{card.title}</p>
+                   <p className="text-sm text-gray-500 truncate">{card.description}</p>
+                 </div>
+                 <button onClick={() => setEditing(card.id)} className="px-3 py-1.5 bg-blue-100 text-blue-700 text-sm rounded-lg hover:bg-blue-200">Editar</button>
+                 <button onClick={() => handleDeleteCard(card.id)} className="px-3 py-1.5 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200">Eliminar</button>
+               </>
+             )}
+           </div>
+         ))}
       </div>
     </div>
   )
