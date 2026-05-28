@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
+import dynamic from "next/dynamic";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,6 +12,10 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const Toaster = dynamic(() =>
+  import("@/components/ui/toaster").then((m) => ({ default: m.Toaster })),
+);
 
 export const metadata: Metadata = {
   title: "Radio Miraflores Televisión | Tu Estación de Rock",

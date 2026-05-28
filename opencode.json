@@ -15,6 +15,11 @@
       "type": "local",
       "command": ["npx", "-y", "@playwright/mcp"],
       "enabled": true
+    },
+    "mind": {
+      "type": "local",
+      "command": ["bun", "run", "C:\\Users\\jorge\\AppData\\Local\\Temp\\mind\\src\\mind.ts", "mcp"],
+      "enabled": true
     }
   }
 }

@@ -44,7 +44,26 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-useless-escape": "off",
   },
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills"]
+  ignores: [
+    "node_modules/**",
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "examples/**",
+    "skills",
+    // Server scripts (CommonJS)
+    "*.js",
+    "server*.js",
+    "simple-server*.js",
+    "static-server.js",
+    "unified-server.js",
+    "port-proxy.js",
+    "production-server.js",
+    "fetch-wp-data.js",
+    // Video segments (binary data)
+    "public/videos/**"
+  ]
 }];
 
 export default eslintConfig;

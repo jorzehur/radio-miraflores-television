@@ -70,11 +70,12 @@ const colorMap = [
   'from-blue-500 to-blue-600',
 ]
 
-export default function TestimoniosSection() {
-  const [data, setData] = useState<TestimoniosData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+export default function TestimoniosSection({ initialData }: { initialData?: TestimoniosData | null }) {
+  const [data, setData] = useState<TestimoniosData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchTestimonios() {

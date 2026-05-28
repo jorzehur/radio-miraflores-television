@@ -39,11 +39,12 @@ const contactCards = [
   { icon: Clock, label: 'Horario', color: 'from-blue-500 to-blue-600', field: 'schedule' as const, prefix: '' },
 ]
 
-export default function InfoSection() {
-  const [data, setData] = useState<InfoData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+export default function InfoSection({ initialData }: { initialData?: InfoData | null }) {
+  const [data, setData] = useState<InfoData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchInfo() {

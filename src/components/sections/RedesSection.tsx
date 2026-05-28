@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import { ExternalLink, Heart, MessageCircle, Repeat2, Eye, EyeOff, ChevronDown, Radio } from 'lucide-react'
 import { YoutubeIcon, InstagramIcon, TwitterXIcon } from '@/components/SocialIcons'
 
@@ -274,9 +275,9 @@ function renderPlatformEmbed(platform: string, embedUrl: string) {
   }
 }
 
-export default function RedesSection() {
-  const [data, setData] = useState<RedesData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+export default function RedesSection({ initialData }: { initialData?: RedesData | null }) {
+  const [data, setData] = useState<RedesData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
   const [expandedSocials, setExpandedSocials] = useState<Record<string, boolean>>({})
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
@@ -289,6 +290,7 @@ export default function RedesSection() {
   }
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchRedes() {
@@ -411,8 +413,8 @@ export default function RedesSection() {
                     <div className="mt-3 rounded-xl border border-gray-100 bg-white p-3 shadow-inner text-left">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-orange-400 p-[1.5px]">
-                          <div className="w-full h-full bg-white rounded-full p-[1px]">
-                            <img src="/images/logo-rmtv.png" className="w-full h-full rounded-full" alt="Avatar" />
+                          <div className="relative w-full h-full bg-white rounded-full p-[1px]">
+                            <Image src="/images/logo-rmtv.png" fill className="rounded-full" alt="Avatar" sizes="32px" />
                           </div>
                         </div>
                         <div>
@@ -421,7 +423,7 @@ export default function RedesSection() {
                         </div>
                       </div>
                       <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-50 border border-gray-100 mb-2">
-                        <img src="/images/hero-radio-studio.png" className="w-full h-full object-cover" alt="Post" />
+                          <Image src="/images/hero-radio-studio.png" fill className="object-cover" alt="Post" sizes="(max-width: 768px) 100vw, 384px" />
                       </div>
                       <div className="flex items-center gap-3 mb-1 text-gray-700">
                         <Heart className="w-4 h-4 text-red-500 fill-red-500 cursor-pointer hover:scale-110 transition-transform" />
@@ -438,7 +440,7 @@ export default function RedesSection() {
                   return (
                     <div className="mt-3 rounded-xl border border-gray-100 bg-white p-4 shadow-inner text-left">
                       <div className="flex items-center gap-2 mb-2">
-                        <img src="/images/logo-rmtv.png" className="w-8 h-8 rounded-full border border-gray-100" alt="Avatar" />
+                          <Image src="/images/logo-rmtv.png" width={32} height={32} className="rounded-full border border-gray-100" alt="Avatar" />
                         <div>
                           <p className="text-xs font-bold text-gray-900 flex items-center gap-1 leading-tight">
                             Radio Miraflores TV

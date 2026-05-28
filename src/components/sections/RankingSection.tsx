@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Music, Trophy, TrendingUp, Flame } from 'lucide-react'
 
 interface RankingItem {
@@ -41,11 +42,12 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 }
 
-export default function RankingSection() {
-  const [ranking, setRanking] = useState<RankingItem[]>(fallbackRanking)
-  const [isLoading, setIsLoading] = useState(true)
+export default function RankingSection({ initialData }: { initialData?: RankingItem[] | null }) {
+  const [ranking, setRanking] = useState<RankingItem[]>(initialData ?? fallbackRanking)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchRanking() {
@@ -144,11 +146,15 @@ export default function RankingSection() {
                   </div>
                 </div>
                 {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt={`${item.album} cover`}
-                    className="w-full h-48 object-cover rounded-xl mb-3"
-                  />
+                  <div className="relative w-full h-48 overflow-hidden rounded-xl mb-3">
+                    <Image
+                      src={item.imageUrl}
+                      alt={`${item.album} cover`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    />
+                  </div>
                 )}
                 <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-[#8B1A2B] transition-colors line-clamp-1">
                   {item.song}

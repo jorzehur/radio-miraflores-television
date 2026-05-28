@@ -58,11 +58,12 @@ const iconMap: Record<string, any> = { radio: Radio, mic: Mic2, headphones: Head
 const suitMap = ['♠', '♥', '♦', '♣']
 const suitColorMap = ['text-gray-800', 'text-red-600', 'text-red-600', 'text-gray-800']
 
-export default function NosotrosSection() {
-  const [data, setData] = useState<NosotrosData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+export default function NosotrosSection({ initialData }: { initialData?: NosotrosData | null }) {
+  const [data, setData] = useState<NosotrosData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchNosotros() {

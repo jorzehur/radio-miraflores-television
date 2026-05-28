@@ -19,6 +19,7 @@ model AdminUser {
   password  String   // hashed password
   name      String
   role      String   @default("admin")
+  token     String?  // session token (random UUID, null = not logged in)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

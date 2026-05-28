@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { ThumbsUp, MessageCircle, Share2, Clock, ExternalLink } from 'lucide-react'
 
 interface NoticiaItem {
@@ -85,11 +86,12 @@ function formatDate(dateStr: string): string {
   }
 }
 
-export default function NoticiasSection() {
-  const [data, setData] = useState<NoticiasData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+export default function NoticiasSection({ initialData }: { initialData?: NoticiasData | null }) {
+  const [data, setData] = useState<NoticiasData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchNoticias() {
@@ -241,11 +243,13 @@ export default function NoticiasSection() {
 
                 {/* Image - only show for non-Facebook posts with an image */}
                 {!isFacebookPost && noticia.imageUrl && (
-                  <div className="relative cursor-pointer group overflow-hidden border-y border-gray-50">
-                    <img
+                  <div className="relative cursor-pointer group overflow-hidden border-y border-gray-50 h-56 sm:h-72">
+                    <Image
                       src={noticia.imageUrl}
                       alt={noticia.title}
-                      className="w-full h-56 sm:h-72 object-cover group-hover:scale-[1.015] transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-[1.015] transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, 672px"
                     />
                   </div>
                 )}

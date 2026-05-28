@@ -32,11 +32,12 @@ const defaultHero: HeroData = {
   updatedAt: '',
 }
 
-export default function HeroSection() {
-  const [hero, setHero] = useState<HeroData>(defaultHero)
-  const [isLoading, setIsLoading] = useState(true)
+export default function HeroSection({ initialData }: { initialData?: HeroData | null }) {
+  const [hero, setHero] = useState<HeroData>(initialData ?? defaultHero)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchHero() {

@@ -102,7 +102,7 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
    const [infoData, setInfoData] = useState<InfoData | null>(null)
    const [footerData, setFooterData] = useState<FooterData | null>(null)
    const [videoRankingSection, setVideoRankingSection] = useState<Record<string, string>>({})
-   const [videoRankingItems, setVideoRankingItems] = useState<{ id: string; title: string; artist: string; youtubeUrl: string; videoId: string; thumbnailUrl: string | null; active: boolean; sortOrder: number }[]>([])
+   const [videoRankingItems, setVideoRankingItems] = useState<{ id: string; title: string; artist: string; youtubeUrl: string; videoId: string; thumbnailUrl: string | null; active: boolean; sortOrder: number; hlsUrl?: string | null; downloadStatus?: string }[]>([])
 
    // New item form states
    const [newRanking, setNewRanking] = useState({ position: 1, song: '', artist: '', album: '', weeks: 1, trend: 'up' })
@@ -220,14 +220,6 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
      }
    }, [activeSection, isLoggedIn, isOpen])
 
-  async function checkAuth() {
-    try {
-      const res = await fetch('/api/admin/auth/check')
-      const data = await res.json()
-      setIsLoggedIn(data.authenticated === true)
-    } catch { /* ignore */ }
-  }
-
   async function handleLogin() {
     setLoading(true)
     try {
@@ -260,90 +252,6 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
-  }
-
-  async function loadSectionData(section: string) {
-    try {
-      switch (section) {
-        case 'hero': {
-          const res = await fetch('/api/admin/hero')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (d && d.title) setHeroData(d)
-          break
-        }
-        case 'ranking': {
-          const res = await fetch('/api/admin/ranking')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (Array.isArray(d)) setRankingData(d)
-          break
-        }
-        case 'nosotros': {
-          const res = await fetch('/api/admin/nosotros')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (d && Array.isArray(d.cards)) setNosotrosCards(d.cards)
-          break
-        }
-        case 'noticias': {
-          const res = await fetch('/api/admin/noticias')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (d) {
-            if (Array.isArray(d.items)) setNoticiasData(d.items)
-            if (d.maxVisible) setNoticiasMaxVisible(d.maxVisible)
-          }
-          break
-        }
-        case 'testimonios': {
-          const res = await fetch('/api/admin/testimonios')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (d && Array.isArray(d.items)) setTestimoniosData(d.items)
-          break
-        }
-        case 'redes': {
-          const res = await fetch('/api/admin/redes')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (d && Array.isArray(d.items)) setRedesData(d.items)
-          break
-        }
-        case 'info': {
-          const res = await fetch('/api/admin/info')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (d && d.email) setInfoData(d)
-          break
-        }
-        case 'footer': {
-          const res = await fetch('/api/admin/footer')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (d && d.description) setFooterData(d)
-          break
-        }
-        case 'video-ranking': {
-          const res = await fetch('/api/admin/video-ranking')
-          if (!res.ok) throw new Error('No autorizado')
-          const d = await res.json()
-          if (d) {
-            const { items, ...section } = d
-            setVideoRankingSection(section)
-            if (Array.isArray(items)) setVideoRankingItems(items)
-          }
-          break
-        }
-      }
-    } catch (err: any) {
-      if (err?.message === 'No autorizado') {
-        showToast('Sesión expirada. Inicia sesión nuevamente.', 'error')
-        setIsLoggedIn(false)
-      } else {
-        showToast('Error al cargar datos', 'error')
-      }
-    }
   }
 
   async function apiPut(url: string, body: any) {
