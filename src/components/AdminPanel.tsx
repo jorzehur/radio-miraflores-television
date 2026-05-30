@@ -747,9 +747,9 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                       const u = [...redesData]; u[i] = { ...u[i], username: e.target.value }; setRedesData(u)
                     }} className="px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="Usuario" />
                   </div>
-                  <input value={item.embedUrl || ''} onChange={e => {
+                  <textarea value={item.embedUrl || ''} onChange={e => {
                     const u = [...redesData]; u[i] = { ...u[i], embedUrl: e.target.value || null }; setRedesData(u)
-                  }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="URL embed / iframe (opcional)" />
+                  }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm min-h-[60px]" placeholder="URL embed / iframe / HTML (opcional)" />
                   <input value={item.followers} onChange={e => {
                     const u = [...redesData]; u[i] = { ...u[i], followers: e.target.value }; setRedesData(u)
                   }} className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-sm" placeholder="Seguidores" />
@@ -767,7 +767,7 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                 <option value="spotify">Spotify</option>
               </select>
               <input value={newRed.url} onChange={e => setNewRed({ ...newRed, url: e.target.value })} className="w-full px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="URL" />
-              <input value={newRed.embedUrl} onChange={e => setNewRed({ ...newRed, embedUrl: e.target.value })} className="w-full px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="URL embed / iframe (opcional)" />
+              <textarea value={newRed.embedUrl} onChange={e => setNewRed({ ...newRed, embedUrl: e.target.value })} className="w-full px-2 py-1.5 bg-white border border-blue-200 rounded text-sm min-h-[60px]" placeholder="URL embed / iframe / HTML (opcional)" />
               <div className="grid grid-cols-2 gap-2">
                 <input value={newRed.username} onChange={e => setNewRed({ ...newRed, username: e.target.value })} className="px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="Usuario" />
                 <input value={newRed.followers} onChange={e => setNewRed({ ...newRed, followers: e.target.value })} className="px-2 py-1.5 bg-white border border-blue-200 rounded text-sm" placeholder="Seguidores" />

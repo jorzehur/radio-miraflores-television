@@ -164,15 +164,36 @@ function getPlatformIcon(platform: string) {
 
 function isAllowedEmbedUrl(url: string | null | undefined) {
   if (!url) return false
+  const trimmed = url.trim()
+  if (trimmed.startsWith('<')) return true
   try {
-    const parsed = new URL(url)
+    const parsed = new URL(trimmed)
     return parsed.protocol === 'https:' || parsed.protocol === 'http:'
   } catch {
     return false
   }
 }
 
-function renderPlatformEmbed(platform: string, embedUrl: string) {
+function isHtmlEmbed(url: string | null | undefined): boolean {
+  if (!url) return false
+  return url.trim().startsWith('<')
+}
+
+function renderPlatformEmbed(platform: string, embedUrl: string, isMounted: boolean = false) {
+  if (isHtmlEmbed(embedUrl)) {
+    if (!isMounted) {
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-gray-100 border border-gray-200/50 shadow-inner h-[300px] animate-pulse flex items-center justify-center">
+          <p className="text-gray-400 text-sm">Cargando embed...</p>
+        </div>
+      )
+    }
+    return (
+      <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner p-2 [&_blockquote]:my-0 [&_iframe]:!w-full [&_iframe]:!rounded-xl">
+        <div dangerouslySetInnerHTML={{ __html: embedUrl }} />
+      </div>
+    )
+  }
   switch (platform) {
     case 'youtube':
       return (
@@ -279,6 +300,9 @@ export default function RedesSection({ initialData }: { initialData?: RedesData 
   const [data, setData] = useState<RedesData>(initialData ?? defaultData)
   const [isLoading, setIsLoading] = useState(!initialData)
   const [expandedSocials, setExpandedSocials] = useState<Record<string, boolean>>({})
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -323,6 +347,33 @@ export default function RedesSection({ initialData }: { initialData?: RedesData 
   }, [])
 
   const items = data.items && data.items.length > 0 ? data.items : defaultItems
+
+  useEffect(() => {
+    const hasHtmlEmbed = items.some(s => isHtmlEmbed(s.embedUrl))
+    if (!hasHtmlEmbed) return
+    if (document.querySelector('script[src="https://platform.x.com/widgets.js"]')) {
+      if (typeof window !== 'undefined' && (window as any).twttr?.widgets) {
+        (window as any).twttr.widgets.load()
+      }
+      return
+    }
+    const script = document.createElement('script')
+    script.src = 'https://platform.x.com/widgets.js'
+    script.async = true
+    script.charset = 'utf-8'
+    script.onload = () => {
+      if (typeof window !== 'undefined' && (window as any).twttr?.widgets) {
+        (window as any).twttr.widgets.load()
+      }
+    }
+    document.body.appendChild(script)
+  }, [items])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).twttr?.widgets) {
+      (window as any).twttr.widgets.load()
+    }
+  }, [expandedSocials])
 
   return (
     <section id="redes" className="py-20 md:py-28 bg-gradient-to-b from-white via-[#FFF5F6] to-[#FFF9F2]">
@@ -376,7 +427,7 @@ export default function RedesSection({ initialData }: { initialData?: RedesData 
 
             const renderLatestPost = () => {
               if (hasEmbed && social.embedUrl) {
-                return renderPlatformEmbed(social.platform, social.embedUrl);
+                return renderPlatformEmbed(social.platform, social.embedUrl, mounted);
               }
               switch (social.platform) {
                 case 'youtube':

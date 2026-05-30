@@ -22,6 +22,13 @@ export default function AdminRedes() {
     setSaving(true); setSaved(false)
     const { items: _, ...data } = section as any
     await fetch('/api/admin/redes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+    await Promise.all(items.map(item =>
+      fetch(`/api/admin/redes/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ platform: item.platform, url: item.url, embedUrl: item.embedUrl || null, username: item.username, followers: item.followers, sortOrder: item.sortOrder, active: item.active }),
+      })
+    ))
     setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
   }
 
@@ -81,7 +88,7 @@ export default function AdminRedes() {
             <div><label className="block text-sm font-medium text-gray-700 mb-1">URL</label><input type="text" value={form.url} onChange={e => setForm({...form, url: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" placeholder="https://facebook.com/..." /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Username</label><input type="text" value={form.username} onChange={e => setForm({...form, username: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" placeholder="@radiomiraflores" /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Seguidores</label><input type="text" value={form.followers} onChange={e => setForm({...form, followers: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" placeholder="50K seguidores" /></div>
-            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">URL Embed / iframe (opcional)</label><input type="text" value={form.embedUrl} onChange={e => setForm({...form, embedUrl: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none" placeholder="https://www.facebook.com/plugins/post.php?... o https://www.youtube.com/embed/..." /><p className="mt-1 text-xs text-gray-500">Usa la URL de insercion del post, reel, video o playlist para mostrar una vista real de la ultima publicacion.</p></div>
+            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">URL Embed / iframe / HTML (opcional)</label><textarea value={form.embedUrl} onChange={e => setForm({...form, embedUrl: e.target.value})} className="w-full px-4 py-2.5 border rounded-lg outline-none min-h-[80px]" placeholder="URL de iframe (https://www.youtube.com/embed/...) o codigo HTML completo (blockquote de Twitter, post de Facebook, etc.)" /><p className="mt-1 text-xs text-gray-500">Pega una URL de iframe o el codigo HTML completo del embed (Twitter, Facebook, YouTube, etc.)</p></div>
           </div>
           <button onClick={handleCreate} className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Agregar</button>
         </div>
@@ -128,7 +135,7 @@ export default function AdminRedes() {
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Username</label><input type="text" value={item.username} onChange={e => setItems(prev => prev.map(it => it.id === item.id ? { ...it, username: e.target.value } : it))} className="w-full px-4 py-2.5 border rounded-lg outline-none" placeholder="@radiomiraflores" /></div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Seguidores</label><input type="text" value={item.followers} onChange={e => setItems(prev => prev.map(it => it.id === item.id ? { ...it, followers: e.target.value } : it))} className="w-full px-4 py-2.5 border rounded-lg outline-none" placeholder="50K seguidores" /></div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Orden</label><input type="number" value={item.sortOrder} onChange={e => setItems(prev => prev.map(it => it.id === item.id ? { ...it, sortOrder: Number(e.target.value) || 0 } : it))} className="w-full px-4 py-2.5 border rounded-lg outline-none" /></div>
-              <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">URL Embed / iframe (opcional)</label><input type="text" value={item.embedUrl || ''} onChange={e => setItems(prev => prev.map(it => it.id === item.id ? { ...it, embedUrl: e.target.value || null } : it))} className="w-full px-4 py-2.5 border rounded-lg outline-none" placeholder="https://www.facebook.com/plugins/post.php?... o https://www.youtube.com/embed/..." /><p className="mt-1 text-xs text-gray-500">Pega aqui la URL de insercion para mostrar la ultima publicacion real en la web.</p></div>
+              <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">URL Embed / iframe / HTML (opcional)</label><textarea value={item.embedUrl || ''} onChange={e => setItems(prev => prev.map(it => it.id === item.id ? { ...it, embedUrl: e.target.value || null } : it))} className="w-full px-4 py-2.5 border rounded-lg outline-none min-h-[80px]" placeholder="URL de iframe o codigo HTML completo del embed" /><p className="mt-1 text-xs text-gray-500">Pega una URL de iframe o el codigo HTML completo del embed (Twitter, Facebook, YouTube, etc.)</p></div>
             </div>
           </div>
         ))}
