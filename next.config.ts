@@ -17,7 +17,6 @@ const nextConfig: NextConfig = {
   },
   
   reactStrictMode: true,
-  serverExternalPackages: ['ffmpeg-static', 'youtube-dl-exec'],
   allowedDevOrigins: [
     "preview-chat-8691144e-eae6-4467-827b-8cc03c24dd5b.space-z.ai",
     ".space.chatglm.site",

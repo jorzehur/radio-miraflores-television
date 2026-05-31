@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { ExternalLink, Play, Radio, Volume2, VolumeX } from 'lucide-react'
 import { buildYouTubeThumbnail } from '@/lib/youtube'
-import Hls from 'hls.js'
 
 interface VideoRankingItem {
   id: string
@@ -16,8 +15,6 @@ interface VideoRankingItem {
   thumbnailUrl: string | null
   active: boolean
   sortOrder: number
-  hlsUrl?: string | null
-  downloadStatus?: string
 }
 
 interface VideoRankingData {
@@ -58,8 +55,6 @@ export default function VideoRankingSection({ initialData }: { initialData?: Vid
   const [isLoading, setIsLoading] = useState(!initialData)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(true)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const hlsRef = useRef<Hls | null>(null)
 
   useEffect(() => {
     if (initialData) return
@@ -102,65 +97,15 @@ export default function VideoRankingSection({ initialData }: { initialData?: Vid
     [data.items]
   )
 
-  const currentVideo = activeItems[currentIndex] || activeItems[0]
-
-   useEffect(() => {
-     if (currentIndex >= activeItems.length) {
-       setCurrentIndex(prev => 0)
-     }
-   }, [activeItems.length, currentIndex])
-
-  const hasHls = currentVideo?.hlsUrl && currentVideo.downloadStatus === 'ready'
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video || !hasHls || !currentVideo?.hlsUrl) return
-
-    if (hlsRef.current) {
-      hlsRef.current.destroy()
-      hlsRef.current = null
-    }
-
-    video.muted = true
-    video.volume = 1
-
-    if (Hls.isSupported()) {
-      const hls = new Hls()
-      hlsRef.current = hls
-      hls.loadSource(currentVideo.hlsUrl)
-      hls.attachMedia(video)
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.muted = isMuted
-        video.play().catch(() => {})
-      })
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = currentVideo.hlsUrl
-      video.addEventListener('canplay', () => {
-        video.muted = isMuted
-        video.play().catch(() => {})
-      }, { once: true })
-    }
-
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy()
-        hlsRef.current = null
-      }
-    }
-  }, [currentVideo?.id, hasHls])
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (video && hasHls) {
-      video.muted = isMuted
-    }
-  }, [isMuted, hasHls])
+  const safeCurrentIndex = currentIndex >= activeItems.length ? 0 : currentIndex
+  const currentVideo = activeItems[safeCurrentIndex] || activeItems[0]
 
   const currentVideoId = currentVideo?.videoId
   const playlistIds = useMemo(() => activeItems.map(item => item.videoId).filter(Boolean), [activeItems])
   const playlistParam = useMemo(() => playlistIds.join(','), [playlistIds])
+
   const iframeSrc = useMemo(() => {
-    if (!currentVideoId || hasHls) return ''
+    if (!currentVideoId) return ''
     const params = new URLSearchParams({
       autoplay: '1',
       mute: isMuted ? '1' : '0',
@@ -172,7 +117,7 @@ export default function VideoRankingSection({ initialData }: { initialData?: Vid
       enablejsapi: '0',
     })
     return `https://www.youtube.com/embed/${currentVideoId}?${params.toString()}`
-  }, [currentVideoId, hasHls, playlistParam, isMuted])
+  }, [currentVideoId, playlistParam, isMuted])
 
   function playVideoAt(index: number) {
     setCurrentIndex(index)
@@ -246,22 +191,14 @@ export default function VideoRankingSection({ initialData }: { initialData?: Vid
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {hasHls ? 'Streaming local' : 'Reproducción continua'}
+                  Reproducción continua
                 </div>
               </div>
             </div>
             <div className="p-3 sm:p-4">
               <div className="overflow-hidden rounded-2xl bg-black shadow-inner">
                 <div className="aspect-video w-full">
-                  {hasHls ? (
-                    <video
-                      ref={videoRef}
-                      className="h-full w-full"
-                      playsInline
-                      loop
-                      controls
-                    />
-                  ) : iframeSrc ? (
+                  {iframeSrc ? (
                     <iframe
                       key={`${currentVideoId}-${isMuted ? 'muted' : 'sound'}`}
                       src={iframeSrc}
@@ -278,7 +215,7 @@ export default function VideoRankingSection({ initialData }: { initialData?: Vid
                 </div>
               </div>
               <p className="mt-4 text-sm font-medium text-gray-500">
-                {isLoading ? 'Cargando playlist...' : hasHls ? 'Reproduciendo desde servidor local — sin bloqueos ni demoras.' : 'Autoplay continuo en mute por compatibilidad. El audio se activa con tu interacción.'}
+                {isLoading ? 'Cargando playlist...' : 'Autoplay continuo en mute por compatibilidad. El audio se activa con tu interacción.'}
               </p>
             </div>
           </motion.div>

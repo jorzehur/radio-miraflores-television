@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { buildYouTubeThumbnail, extractYouTubeVideoId } from '@/lib/youtube'
-import { Loader2 } from 'lucide-react'
 
 interface VideoItem {
   id: string
@@ -13,9 +12,6 @@ interface VideoItem {
   thumbnailUrl: string | null
   active: boolean
   sortOrder: number
-  hlsUrl?: string | null
-  downloadStatus?: string
-  downloadError?: string | null
 }
 
 export default function AdminVideoRanking() {
@@ -26,7 +22,7 @@ export default function AdminVideoRanking() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ title: '', artist: '', youtubeUrl: '', sortOrder: 0 })
   const [error, setError] = useState('')
-  const [downloadingId, setDownloadingId] = useState<string | null>(null)
+  const [previewVideoId, setPreviewVideoId] = useState<string | null>(null)
 
   useEffect(() => {
     loadData()
@@ -69,6 +65,7 @@ export default function AdminVideoRanking() {
 
     setForm({ title: '', artist: '', youtubeUrl: '', sortOrder: items.length + 1 })
     setShowForm(false)
+    setPreviewVideoId(null)
     loadData()
   }
 
@@ -99,16 +96,10 @@ export default function AdminVideoRanking() {
     await handleUpdate(item.id, { active: !item.active })
   }
 
-  async function handleDownload(id: string) {
-    setDownloadingId(id)
-    const res = await fetch('/api/admin/video-ranking/download', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    })
-    const data = await res.json()
-    loadData()
-    setDownloadingId(null)
+  function handleUrlChange(url: string) {
+    setForm({ ...form, youtubeUrl: url })
+    const videoId = extractYouTubeVideoId(url)
+    setPreviewVideoId(videoId)
   }
 
   return (
@@ -163,13 +154,23 @@ export default function AdminVideoRanking() {
             </div>
             <div className="md:col-span-2">
               <label className="mb-1 block text-sm font-medium text-gray-700">URL de YouTube</label>
-              <input value={form.youtubeUrl} onChange={e => setForm({ ...form, youtubeUrl: e.target.value })} className="w-full rounded-lg border px-4 py-2.5 outline-none" placeholder="https://www.youtube.com/watch?v=..." />
+              <input value={form.youtubeUrl} onChange={e => handleUrlChange(e.target.value)} className="w-full rounded-lg border px-4 py-2.5 outline-none" placeholder="https://www.youtube.com/watch?v=..." />
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Orden</label>
               <input type="number" value={form.sortOrder} onChange={e => setForm({ ...form, sortOrder: Number(e.target.value) || 0 })} className="w-full rounded-lg border px-4 py-2.5 outline-none" />
             </div>
           </div>
+          {previewVideoId && (
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-medium text-green-600">✅ Video detectado: {previewVideoId}</p>
+              <img
+                src={`https://img.youtube.com/vi/${previewVideoId}/maxresdefault.jpg`}
+                alt="Vista previa"
+                className="w-48 rounded-lg border border-gray-200"
+              />
+            </div>
+          )}
           {error && <p className="mt-3 text-sm font-medium text-red-600">{error}</p>}
           <button onClick={handleCreate} className="mt-4 rounded-lg bg-green-600 px-6 py-2 text-white font-medium hover:bg-green-700 transition">
             Crear video
@@ -194,29 +195,11 @@ export default function AdminVideoRanking() {
                     <h4 className="font-semibold text-gray-900">{item.title}</h4>
                     <p className="text-sm text-gray-500">{item.artist || 'Sin artista'}</p>
                     <p className="mt-1 text-xs text-gray-400">Video ID: {item.videoId}</p>
-                    {item.hlsUrl ? (
-                      <p className="mt-1 text-xs text-green-600">✓ HLS listo</p>
-                    ) : (
-                      <p className="mt-1 text-xs text-amber-600">HLS pendiente</p>
-                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => toggleActive(item)} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${item.active ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}>
                       {item.active ? 'Ocultar' : 'Mostrar'}
                     </button>
-                    {item.hlsUrl ? (
-                      <button disabled className="rounded-lg bg-green-100 px-3 py-1.5 text-sm text-green-700 font-medium cursor-default">
-                        HLS listo
-                      </button>
-                    ) : downloadingId === item.id ? (
-                      <button disabled className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm text-amber-700 font-medium cursor-default">
-                        <Loader2 className="w-4 h-4 inline animate-spin mr-1" />Convirtiendo...
-                      </button>
-                    ) : (
-                      <button onClick={() => handleDownload(item.id)} className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm text-white font-medium hover:bg-amber-600 transition">
-                        Descargar HLS
-                      </button>
-                    )}
                     <button onClick={() => handleDelete(item.id)} className="rounded-lg bg-red-100 px-3 py-1.5 text-sm text-red-700 hover:bg-red-200">
                       Eliminar
                     </button>

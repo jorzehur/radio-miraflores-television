@@ -1,10 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { ExternalLink, Heart, MessageCircle, Repeat2, Eye, EyeOff, ChevronDown, Radio } from 'lucide-react'
 import { YoutubeIcon, InstagramIcon, TwitterXIcon } from '@/components/SocialIcons'
+
+declare global {
+  interface Window {
+    twttr?: {
+      widgets?: {
+        load: (element?: HTMLElement) => void
+      }
+    }
+  }
+}
 
 interface RedSocial {
   id: string
@@ -179,8 +189,120 @@ function isHtmlEmbed(url: string | null | undefined): boolean {
   return url.trim().startsWith('<')
 }
 
+function extractInstagramPostId(html: string): string | null {
+  const permalinkMatch = html.match(/data-instgrm-permalink="([^"]+)"/)
+  if (permalinkMatch) {
+    const urlMatch = permalinkMatch[1].match(/instagram\.com\/p\/([^/?]+)/)
+    if (urlMatch) return urlMatch[1]
+  }
+  const hrefMatch = html.match(/instagram\.com\/p\/([^/?"']+)/)
+  if (hrefMatch) return hrefMatch[1]
+  return null
+}
+
+function extractTwitterTweetId(html: string): string | null {
+  const statusMatch = html.match(/status\/(\d+)/)
+  if (statusMatch) return statusMatch[1]
+  const tweetIdMatch = html.match(/data-tweet-id="(\d+)"/)
+  if (tweetIdMatch) return tweetIdMatch[1]
+  return null
+}
+
+function extractTwitterTweetUrl(html: string): string | null {
+  const hrefMatch = html.match(/href="(https?:\/\/(?:x\.com|twitter\.com)\/\w+\/status\/\d+[^"]*)"/)
+  if (hrefMatch) return hrefMatch[1].split('?')[0].replace('x.com', 'twitter.com')
+  const dataMatch = html.match(/data-src="(https?:\/\/(?:x\.com|twitter\.com)\/\w+\/status\/\d+[^"]*)"/)
+  if (dataMatch) return dataMatch[1].split('?')[0]
+  return null
+}
+
+function TwitterEmbed({ html }: { html: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const tweetUrl = extractTwitterTweetUrl(html)
+
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://platform.x.com/widgets.js'
+    script.async = true
+    script.charset = 'utf-8'
+    document.body.appendChild(script)
+
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script)
+      }
+    }
+  }, [])
+
+  if (!tweetUrl) {
+    return (
+      <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner p-4 text-center text-gray-500">
+        No se pudo cargar el tweet
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner p-4">
+      <blockquote className="twitter-tweet">
+        <a href={tweetUrl}>Cargando tweet...</a>
+      </blockquote>
+    </div>
+  )
+}
+
+function HtmlEmbedRenderer({ html }: { html: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const scripts = containerRef.current.querySelectorAll('script')
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script')
+      Array.from(oldScript.attributes).forEach(attr => {
+        newScript.setAttribute(attr.name, attr.value)
+      })
+      if (oldScript.src) {
+        newScript.src = oldScript.src
+      } else {
+        newScript.textContent = oldScript.textContent
+      }
+      oldScript.parentNode?.replaceChild(newScript, oldScript)
+    })
+  }, [html])
+
+  return (
+    <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner p-2 [&_blockquote]:my-0 [&_iframe]:!w-full [&_iframe]:!rounded-xl">
+      <div ref={containerRef} dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  )
+}
+
 function renderPlatformEmbed(platform: string, embedUrl: string, isMounted: boolean = false) {
   if (isHtmlEmbed(embedUrl)) {
+    const instagramPostId = extractInstagramPostId(embedUrl)
+    if (instagramPostId) {
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[620px]">
+          <iframe
+            src={`https://www.instagram.com/p/${instagramPostId}/embed/`}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+            allowTransparency={true}
+          ></iframe>
+        </div>
+      )
+    }
+
+    const twitterTweetId = extractTwitterTweetId(embedUrl)
+    if (twitterTweetId) {
+      return <TwitterEmbed html={embedUrl} />
+    }
+
     if (!isMounted) {
       return (
         <div className="mt-3 rounded-xl overflow-hidden bg-gray-100 border border-gray-200/50 shadow-inner h-[300px] animate-pulse flex items-center justify-center">
@@ -188,11 +310,7 @@ function renderPlatformEmbed(platform: string, embedUrl: string, isMounted: bool
         </div>
       )
     }
-    return (
-      <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner p-2 [&_blockquote]:my-0 [&_iframe]:!w-full [&_iframe]:!rounded-xl">
-        <div dangerouslySetInnerHTML={{ __html: embedUrl }} />
-      </div>
-    )
+    return <HtmlEmbedRenderer html={embedUrl} />
   }
   switch (platform) {
     case 'youtube':
@@ -300,9 +418,11 @@ export default function RedesSection({ initialData }: { initialData?: RedesData 
   const [data, setData] = useState<RedesData>(initialData ?? defaultData)
   const [isLoading, setIsLoading] = useState(!initialData)
   const [expandedSocials, setExpandedSocials] = useState<Record<string, boolean>>({})
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => { setMounted(true) }, [])
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
