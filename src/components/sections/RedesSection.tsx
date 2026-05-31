@@ -1,14 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { ExternalLink, Heart, MessageCircle, Repeat2, Eye } from 'lucide-react'
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import { ExternalLink, Heart, MessageCircle, Repeat2, Eye, EyeOff, ChevronDown, Radio } from 'lucide-react'
 import { YoutubeIcon, InstagramIcon, TwitterXIcon } from '@/components/SocialIcons'
+
+declare global {
+  interface Window {
+    twttr?: {
+      widgets?: {
+        load: (element?: HTMLElement) => void
+      }
+    }
+  }
+}
 
 interface RedSocial {
   id: string
   platform: string
   url: string
+  embedUrl?: string | null
   username: string
   followers: string
   active: boolean
@@ -30,6 +42,7 @@ const defaultItems: RedSocial[] = [
     id: '1',
     platform: 'youtube',
     url: 'https://www.youtube.com/@RADIOMIRAFLORESTELEVISION',
+    embedUrl: 'https://www.youtube.com/embed/F3W_aR26Cbo?autoplay=0',
     username: '@RADIOMIRAFLORESTELEVISION',
     followers: '10K suscriptores',
     active: true,
@@ -40,6 +53,7 @@ const defaultItems: RedSocial[] = [
     id: '2',
     platform: 'instagram',
     url: 'https://www.instagram.com/radiomiraflorestelevision/',
+    embedUrl: null,
     username: '@radiomiraflorestelevision',
     followers: '25K seguidores',
     active: true,
@@ -50,6 +64,7 @@ const defaultItems: RedSocial[] = [
     id: '3',
     platform: 'twitter',
     url: 'https://x.com/Rmiraflorestv',
+    embedUrl: null,
     username: '@Rmiraflorestv',
     followers: '8K seguidores',
     active: true,
@@ -157,11 +172,269 @@ function getPlatformIcon(platform: string) {
   }
 }
 
-export default function RedesSection() {
-  const [data, setData] = useState<RedesData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+function isAllowedEmbedUrl(url: string | null | undefined) {
+  if (!url) return false
+  const trimmed = url.trim()
+  if (trimmed.startsWith('<')) return true
+  try {
+    const parsed = new URL(trimmed)
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
+function isHtmlEmbed(url: string | null | undefined): boolean {
+  if (!url) return false
+  return url.trim().startsWith('<')
+}
+
+function extractInstagramPostId(html: string): string | null {
+  const permalinkMatch = html.match(/data-instgrm-permalink="([^"]+)"/)
+  if (permalinkMatch) {
+    const urlMatch = permalinkMatch[1].match(/instagram\.com\/p\/([^/?]+)/)
+    if (urlMatch) return urlMatch[1]
+  }
+  const hrefMatch = html.match(/instagram\.com\/p\/([^/?"']+)/)
+  if (hrefMatch) return hrefMatch[1]
+  return null
+}
+
+function extractTwitterTweetId(html: string): string | null {
+  const statusMatch = html.match(/status\/(\d+)/)
+  if (statusMatch) return statusMatch[1]
+  const tweetIdMatch = html.match(/data-tweet-id="(\d+)"/)
+  if (tweetIdMatch) return tweetIdMatch[1]
+  return null
+}
+
+function extractTwitterTweetUrl(html: string): string | null {
+  const hrefMatch = html.match(/href="(https?:\/\/(?:x\.com|twitter\.com)\/\w+\/status\/\d+[^"]*)"/)
+  if (hrefMatch) return hrefMatch[1].split('?')[0].replace('x.com', 'twitter.com')
+  const dataMatch = html.match(/data-src="(https?:\/\/(?:x\.com|twitter\.com)\/\w+\/status\/\d+[^"]*)"/)
+  if (dataMatch) return dataMatch[1].split('?')[0]
+  return null
+}
+
+function TwitterEmbed({ html }: { html: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const tweetUrl = extractTwitterTweetUrl(html)
 
   useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://platform.x.com/widgets.js'
+    script.async = true
+    script.charset = 'utf-8'
+    document.body.appendChild(script)
+
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script)
+      }
+    }
+  }, [])
+
+  if (!tweetUrl) {
+    return (
+      <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner p-4 text-center text-gray-500">
+        No se pudo cargar el tweet
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner p-4">
+      <blockquote className="twitter-tweet">
+        <a href={tweetUrl}>Cargando tweet...</a>
+      </blockquote>
+    </div>
+  )
+}
+
+function HtmlEmbedRenderer({ html }: { html: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const scripts = containerRef.current.querySelectorAll('script')
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script')
+      Array.from(oldScript.attributes).forEach(attr => {
+        newScript.setAttribute(attr.name, attr.value)
+      })
+      if (oldScript.src) {
+        newScript.src = oldScript.src
+      } else {
+        newScript.textContent = oldScript.textContent
+      }
+      oldScript.parentNode?.replaceChild(newScript, oldScript)
+    })
+  }, [html])
+
+  return (
+    <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner p-2 [&_blockquote]:my-0 [&_iframe]:!w-full [&_iframe]:!rounded-xl">
+      <div ref={containerRef} dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  )
+}
+
+function renderPlatformEmbed(platform: string, embedUrl: string, isMounted: boolean = false) {
+  if (isHtmlEmbed(embedUrl)) {
+    const instagramPostId = extractInstagramPostId(embedUrl)
+    if (instagramPostId) {
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[620px]">
+          <iframe
+            src={`https://www.instagram.com/p/${instagramPostId}/embed/`}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+            allowTransparency={true}
+          ></iframe>
+        </div>
+      )
+    }
+
+    const twitterTweetId = extractTwitterTweetId(embedUrl)
+    if (twitterTweetId) {
+      return <TwitterEmbed html={embedUrl} />
+    }
+
+    if (!isMounted) {
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-gray-100 border border-gray-200/50 shadow-inner h-[300px] animate-pulse flex items-center justify-center">
+          <p className="text-gray-400 text-sm">Cargando embed...</p>
+        </div>
+      )
+    }
+    return <HtmlEmbedRenderer html={embedUrl} />
+  }
+  switch (platform) {
+    case 'youtube':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-black aspect-video border border-gray-100/50 shadow-inner">
+          <iframe
+            width="100%"
+            height="100%"
+            src={embedUrl}
+            title="Ultima publicacion en YouTube"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          ></iframe>
+        </div>
+      )
+    case 'facebook':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white p-2 border border-gray-100/50 shadow-inner flex justify-center h-[340px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none', overflow: 'hidden' }}
+            scrolling="no"
+            frameBorder="0"
+            allowFullScreen={true}
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          ></iframe>
+        </div>
+      )
+    case 'instagram':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[620px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+            allowTransparency={true}
+          ></iframe>
+        </div>
+      )
+    case 'twitter':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[620px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          ></iframe>
+        </div>
+      )
+    case 'spotify':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-black h-[152px] border border-gray-100/50 shadow-inner">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen={true}
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          ></iframe>
+        </div>
+      )
+    case 'tiktok':
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[720px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          ></iframe>
+        </div>
+      )
+    default:
+      return (
+        <div className="mt-3 rounded-xl overflow-hidden bg-white border border-gray-100/50 shadow-inner h-[520px]">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            scrolling="no"
+            frameBorder="0"
+          ></iframe>
+        </div>
+      )
+  }
+}
+
+export default function RedesSection({ initialData }: { initialData?: RedesData | null }) {
+  const [data, setData] = useState<RedesData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
+  const [expandedSocials, setExpandedSocials] = useState<Record<string, boolean>>({})
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
+
+  const toggleExpand = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    setExpandedSocials(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }))
+  }
+
+  useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchRedes() {
@@ -195,8 +468,35 @@ export default function RedesSection() {
 
   const items = data.items && data.items.length > 0 ? data.items : defaultItems
 
+  useEffect(() => {
+    const hasHtmlEmbed = items.some(s => isHtmlEmbed(s.embedUrl))
+    if (!hasHtmlEmbed) return
+    if (document.querySelector('script[src="https://platform.x.com/widgets.js"]')) {
+      if (typeof window !== 'undefined' && (window as any).twttr?.widgets) {
+        (window as any).twttr.widgets.load()
+      }
+      return
+    }
+    const script = document.createElement('script')
+    script.src = 'https://platform.x.com/widgets.js'
+    script.async = true
+    script.charset = 'utf-8'
+    script.onload = () => {
+      if (typeof window !== 'undefined' && (window as any).twttr?.widgets) {
+        (window as any).twttr.widgets.load()
+      }
+    }
+    document.body.appendChild(script)
+  }, [items])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).twttr?.widgets) {
+      (window as any).twttr.widgets.load()
+    }
+  }, [expandedSocials])
+
   return (
-    <section id="redes" className="py-20 md:py-28 bg-white">
+    <section id="redes" className="py-20 md:py-28 bg-gradient-to-b from-white via-[#FFF5F6] to-[#FFF9F2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -206,14 +506,14 @@ export default function RedesSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-red-50 to-purple-50 rounded-full mb-4">
-            <YoutubeIcon className="w-4 h-4 text-red-500" />
-            <span className="text-gray-600 text-sm font-medium">{data.subtitle}</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#8B1A2B]/10 rounded-full mb-4">
+            <YoutubeIcon className="w-4 h-4 text-[#8B1A2B]" />
+            <span className="text-[#8B1A2B] text-sm font-semibold">{data.subtitle}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
             {data.title}
           </h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
+          <p className="text-gray-500 text-lg max-w-xl mx-auto font-medium">
             {data.description}
           </p>
         </motion.div>
@@ -221,52 +521,240 @@ export default function RedesSection() {
         {/* Social Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {items.map((social, index) => {
-            const styles = platformStyles[social.platform] || platformStyles.youtube
-            const IconComponent = getPlatformIcon(social.platform)
-            const label = styles.label || social.platform
+            // Si la red está oculta, mostrar solo un botón para volver a mostrarla
+            if (!social.active) {
+              return (
+                <div key={social.id || social.platform} className="flex items-center justify-center p-4 border-2 rounded-2xl bg-gray-50">
+                  <button
+                    onClick={() => {
+                      setData(prev => ({
+                        ...prev,
+                        items: prev.items.map(it => it.id === social.id ? { ...it, active: true } : it),
+                      }))
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+                  >
+                    <Eye className="w-4 h-4" /> Mostrar
+                  </button>
+                </div>
+              );
+            }
+            const styles = platformStyles[social.platform] || platformStyles.youtube;
+            const IconComponent = getPlatformIcon(social.platform);
+            const label = styles.label || social.platform;
+            const isExpanded = !!expandedSocials[social.id];
+            const hasEmbed = isAllowedEmbedUrl(social.embedUrl);
+
+            const renderLatestPost = () => {
+              if (hasEmbed && social.embedUrl) {
+                return renderPlatformEmbed(social.platform, social.embedUrl, mounted);
+              }
+              switch (social.platform) {
+                case 'youtube':
+                  return (
+                    <div className="mt-3 rounded-xl overflow-hidden bg-black aspect-video border border-gray-100/50 shadow-inner">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        src="https://www.youtube.com/embed/F3W_aR26Cbo?autoplay=0"
+                        title="Última transmisión en YouTube"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  );
+                case 'facebook':
+                  return (
+                    <div className="mt-3 rounded-xl overflow-hidden bg-white p-2 border border-gray-100/50 shadow-inner flex justify-center h-[340px]">
+                      <iframe
+                        src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fradiomiraflorestelevision%2Fposts%2Fpfbid02uRk3eRAGLoSpX6DtULxF9d7PtFTkynQkyonRf7vwguCGoWo9qAXwn41a9Qdv3vvyl&show_text=true&width=500"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 'none', overflow: 'hidden' }}
+                        scrolling="no"
+                        frameBorder="0"
+                        allowFullScreen={true}
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      ></iframe>
+                    </div>
+                  );
+                case 'instagram':
+                  return (
+                    <div className="mt-3 rounded-xl border border-gray-100 bg-white p-3 shadow-inner text-left">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-orange-400 p-[1.5px]">
+                          <div className="relative w-full h-full bg-white rounded-full p-[1px]">
+                            <Image src="/images/logo-rmtv.png" fill className="rounded-full" alt="Avatar" sizes="32px" />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-900 leading-tight">radiomiraflorestelevision</p>
+                          <p className="text-[8px] text-gray-400 font-medium">Miraflores, Lima</p>
+                        </div>
+                      </div>
+                      <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-50 border border-gray-100 mb-2">
+                          <Image src="/images/hero-radio-studio.png" fill className="object-cover" alt="Post" sizes="(max-width: 768px) 100vw, 384px" />
+                      </div>
+                      <div className="flex items-center gap-3 mb-1 text-gray-700">
+                        <Heart className="w-4 h-4 text-red-500 fill-red-500 cursor-pointer hover:scale-110 transition-transform" />
+                        <MessageCircle className="w-4 h-4 cursor-pointer hover:scale-110 transition-transform" />
+                        <span className="text-[9px] text-gray-400 ml-auto font-semibold">Hace 2 horas</span>
+                      </div>
+                      <p className="text-xs text-gray-700 leading-snug">
+                        <span className="font-bold text-gray-900 mr-1">radiomiraflorestelevision</span>
+                        ¡Gran noche de rock clásico en el estudio! Gracias a todos los que sintonizaron. 🎸🤘📸 #RadioMiraflores
+                      </p>
+                    </div>
+                  );
+                case 'twitter':
+                  return (
+                    <div className="mt-3 rounded-xl border border-gray-100 bg-white p-4 shadow-inner text-left">
+                      <div className="flex items-center gap-2 mb-2">
+                          <Image src="/images/logo-rmtv.png" width={32} height={32} className="rounded-full border border-gray-100" alt="Avatar" />
+                        <div>
+                          <p className="text-xs font-bold text-gray-900 flex items-center gap-1 leading-tight">
+                            Radio Miraflores TV
+                            <span className="w-3 h-3 bg-blue-500 text-white rounded-full flex items-center justify-center text-[7px] font-bold">✓</span>
+                          </p>
+                          <p className="text-[9px] text-gray-400">@Rmiraflorestv · Hace 3h</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-800 leading-relaxed mb-3 font-medium">
+                        ¡El Ranking de esta semana está que arde! Bohemian Rhapsody de Queen recupera el #1. ¿Cuál es tu tema favorito? Vota usando el hashtag <span className="text-[#8B1A2B] font-semibold">#RankingMiraflores</span> 🏆🎸
+                      </p>
+                      <div className="flex justify-between text-gray-400 text-[10px] font-bold border-t border-gray-100 pt-2">
+                        <span className="flex items-center gap-1 hover:text-blue-500 cursor-pointer"><Repeat2 className="w-3.5 h-3.5" /> 18</span>
+                        <span className="flex items-center gap-1 hover:text-red-500 cursor-pointer"><Heart className="w-3.5 h-3.5" /> 124</span>
+                        <span className="flex items-center gap-1 hover:text-blue-500 cursor-pointer"><MessageCircle className="w-3.5 h-3.5" /> 12</span>
+                      </div>
+                    </div>
+                  );
+                case 'spotify':
+                  return (
+                    <div className="mt-3 rounded-xl overflow-hidden bg-black h-[152px] border border-gray-100/50 shadow-inner">
+                      <iframe
+                        src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGo761yv?utm_source=generator"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen={true}
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                      ></iframe>
+                    </div>
+                  );
+                default:
+                  return null;
+              }
+            };
+
             return (
-              <motion.a
+              <motion.div
                 key={social.id || social.platform}
-                href={social.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.15 }}
-                whileHover={{ y: -6, scale: 1.02 }}
-                className={`${styles.bgColor} ${styles.borderColor} border-2 rounded-2xl overflow-hidden group cursor-pointer block`}
+                whileHover={{ y: isExpanded ? 0 : -8, scale: isExpanded ? 1 : 1.02 }}
+                className={`${styles.bgColor} ${styles.borderColor} border-2 rounded-2xl overflow-hidden group relative shadow-md hover:shadow-2xl transition-all duration-300 hover:border-[#8B1A2B]/15 flex flex-col`}
               >
+                {/* Hide button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setData(prev => ({
+                      ...prev,
+                      items: prev.items.map(it => it.id === social.id ? { ...it, active: false } : it),
+                    }));
+                  }}
+                  className="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 rounded-full p-1 z-20 cursor-pointer"
+                >
+                  <EyeOff className="w-4 h-4 text-gray-600" />
+                </button>
+
                 {/* Card Header with gradient */}
-                <div className={`bg-gradient-to-r ${styles.color} p-5 relative overflow-hidden`}>
+                <div 
+                  onClick={() => window.open(social.url, '_blank')}
+                  className={`bg-gradient-to-r ${styles.color} p-5 relative overflow-hidden cursor-pointer`}
+                >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
                   <div className="relative flex items-center gap-3">
                     <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                       <IconComponent className="w-6 h-6 text-white" size={24} />
                     </div>
                     <div>
-                      <h3 className="text-white font-bold text-lg">{label}</h3>
-                      <p className="text-white/70 text-sm">{social.username}</p>
+                      <h3 className="text-white font-extrabold text-lg flex items-center gap-1.5">
+                        {label}
+                        <ExternalLink className="w-4 h-4 text-white/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </h3>
+                      <p className="text-white/70 text-sm font-semibold">{social.username}</p>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-white/50 ml-auto group-hover:text-white/80 transition-colors" />
                   </div>
                 </div>
 
-                {/* Followers */}
-                <div className="p-5">
-                  <p className="text-xs font-medium text-gray-400 mb-2 flex items-center gap-1.5">
-                    <Eye className="w-3 h-3" />
-                    Seguidores
-                  </p>
-                  <p className="text-gray-800 text-sm font-semibold group-hover:text-[#8B1A2B] transition-colors">
-                    {social.followers}
-                  </p>
+                {/* Card Body */}
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 mb-0.5 flex items-center gap-1.5">
+                          <Eye className="w-3.5 h-3.5" />
+                          Seguidores
+                        </p>
+                        <p className="text-gray-800 text-sm font-bold">
+                          {social.followers}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Expandable Connected Feed Section */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          {renderLatestPost()}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Feed Connection Button */}
+                  <div className="mt-4 pt-2 border-t border-gray-100/50">
+                    {hasEmbed ? (
+                      <p className="mb-2 text-[11px] font-medium text-gray-500">
+                        Vista real cargada desde la URL embed configurada en el panel.
+                      </p>
+                    ) : (
+                      <p className="mb-2 text-[11px] font-medium text-gray-500">
+                        Vista de referencia mientras configuras el embed real desde el panel.
+                      </p>
+                    )}
+                    <button
+                      onClick={(e) => toggleExpand(social.id, e)}
+                      className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                        isExpanded
+                          ? 'bg-[#8B1A2B] text-white shadow-md shadow-[#8B1A2B]/10 hover:bg-[#6B0F1E]'
+                          : 'bg-white/80 hover:bg-gray-100 text-gray-700 border border-gray-200 shadow-sm'
+                      }`}
+                    >
+                      <span className={`w-2.5 h-2.5 rounded-full ${isExpanded ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
+                      {isExpanded ? 'Ocultar vista previa' : hasEmbed ? 'Ver ultima publicacion real' : 'Ver vista de referencia'}
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Bottom bar */}
                 <div className={`h-1 bg-gradient-to-r ${styles.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left`} />
-              </motion.a>
-            )
+              </motion.div>
+            );
           })}
         </div>
       </div>

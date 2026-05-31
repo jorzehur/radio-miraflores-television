@@ -39,11 +39,12 @@ const contactCards = [
   { icon: Clock, label: 'Horario', color: 'from-blue-500 to-blue-600', field: 'schedule' as const, prefix: '' },
 ]
 
-export default function InfoSection() {
-  const [data, setData] = useState<InfoData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+export default function InfoSection({ initialData }: { initialData?: InfoData | null }) {
+  const [data, setData] = useState<InfoData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchInfo() {
@@ -76,7 +77,7 @@ export default function InfoSection() {
   }, [])
 
   return (
-    <section id="contacto" className="py-20 md:py-28 bg-gradient-to-b from-white to-[#FDF2F4]">
+    <section id="contacto" className="py-20 md:py-28 bg-gradient-to-b from-[#FFF9F2] via-white to-[#FFF0F2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -88,12 +89,12 @@ export default function InfoSection() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#8B1A2B]/10 rounded-full mb-4">
             <MapPin className="w-4 h-4 text-[#8B1A2B]" />
-            <span className="text-[#8B1A2B] text-sm font-medium">{data.subtitle}</span>
+            <span className="text-[#8B1A2B] text-sm font-semibold">{data.subtitle}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
             {data.title}
           </h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
+          <p className="text-gray-500 text-lg max-w-xl mx-auto font-medium">
             {data.description}
           </p>
         </motion.div>
@@ -117,15 +118,15 @@ export default function InfoSection() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  whileHover={{ x: 5 }}
-                  className="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-50 hover:border-[#8B1A2B]/10 transition-all duration-300 group"
+                  whileHover={{ x: 6 }}
+                  className="flex items-center gap-4 p-4 bg-white/95 backdrop-blur-sm rounded-xl shadow-md hover:shadow-xl border border-gray-100 hover:border-[#8B1A2B]/20 transition-all duration-300 group hover:-translate-y-0.5"
                 >
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
                     <IconComponent className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium">{item.label}</p>
-                    <p className="text-gray-800 font-semibold text-sm">{displayValue}</p>
+                    <p className="text-xs text-gray-400 font-semibold">{item.label}</p>
+                    <p className="text-gray-800 font-bold text-sm">{displayValue}</p>
                   </div>
                 </motion.a>
               )
@@ -137,17 +138,17 @@ export default function InfoSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.5 }}
-              className="p-5 bg-gradient-to-br from-[#8B1A2B] to-[#6B0F1E] rounded-xl shadow-lg mt-6"
+              className="p-6 bg-gradient-to-br from-[#8B1A2B] to-[#A63346] rounded-xl shadow-xl shadow-[#8B1A2B]/10 mt-6"
             >
-              <h4 className="text-white font-bold text-lg mb-2">¡Suscríbete!</h4>
-              <p className="text-white/70 text-sm mb-4">Recibe las últimas noticias y el ranking semanal</p>
+              <h4 className="text-white font-extrabold text-xl mb-1.5">¡Suscríbete!</h4>
+              <p className="text-white/80 text-sm mb-4 font-medium">Recibe las últimas noticias y el ranking semanal directamente en tu email</p>
               <div className="flex gap-2">
                 <input
                   type="email"
                   placeholder="Tu correo electrónico"
                   className="flex-1 px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
                 />
-                <button className="px-4 py-2.5 bg-[#F5A623] text-white rounded-lg font-semibold text-sm hover:bg-[#E09520] transition-colors flex items-center gap-1.5">
+                <button className="px-5 py-2.5 bg-[#F5A623] hover:bg-[#FFD166] hover:text-[#8B1A2B] text-white rounded-lg font-bold text-sm shadow-md hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer">
                   <Send className="w-3.5 h-3.5" />
                 </button>
               </div>

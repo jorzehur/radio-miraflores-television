@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "forge",
+
+  "instructions": [
+    ".opencode/rules/project-rules.md",
+    ".opencode/context/**/*.md"
+  ],
+  "permission": {
+    "bash": "ask",
+    "edit": "ask"
+  },
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp"],
+      "enabled": true
+    },
+    "mind": {
+      "type": "local",
+      "command": ["bun", "run", "C:\\Users\\jorge\\AppData\\Local\\Temp\\mind\\src\\mind.ts", "mcp"],
+      "enabled": true
+    }
+  }
+}

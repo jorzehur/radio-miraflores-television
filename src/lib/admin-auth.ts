@@ -7,7 +7,7 @@ export async function getAdminUser() {
     const cookieStore = await cookies()
     const token = cookieStore.get('admin_token')?.value
     if (!token) return null
-    const admin = await db.adminUser.findUnique({ where: { id: token } })
+    const admin = await db.adminUser.findFirst({ where: { token } })
     return admin
   } catch {
     return null

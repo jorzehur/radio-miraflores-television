@@ -70,11 +70,12 @@ const colorMap = [
   'from-blue-500 to-blue-600',
 ]
 
-export default function TestimoniosSection() {
-  const [data, setData] = useState<TestimoniosData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+export default function TestimoniosSection({ initialData }: { initialData?: TestimoniosData | null }) {
+  const [data, setData] = useState<TestimoniosData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchTestimonios() {
@@ -109,7 +110,7 @@ export default function TestimoniosSection() {
   const items = data.items && data.items.length > 0 ? data.items : defaultItems
 
   return (
-    <section id="testimonios" className="py-20 md:py-28 bg-gradient-to-b from-[#FDF2F4] to-white">
+    <section id="testimonios" className="py-20 md:py-28 bg-gradient-to-b from-[#F3F7FA] via-white to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -126,7 +127,7 @@ export default function TestimoniosSection() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
             {data.title}
           </h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
+          <p className="text-gray-500 text-lg max-w-xl mx-auto font-medium">
             {data.description}
           </p>
         </motion.div>
@@ -145,15 +146,16 @@ export default function TestimoniosSection() {
                 transition={{ duration: 0.6, delay: index * 0.15 }}
                 className="relative group"
               >
-                <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-50 hover:border-[#8B1A2B]/10">
-                  <div className="flex flex-col sm:flex-row">
+                <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl hover:shadow-2xl hover:border-[#8B1A2B]/15 transition-all duration-300 overflow-hidden border border-white hover:-translate-y-1">
+                  <div className="flex flex-col sm:flex-row overflow-hidden">
                     {/* Image Side */}
-                    <div className="relative w-full sm:w-48 h-48 sm:h-auto flex-shrink-0 overflow-hidden">
+                    <div className="relative w-full sm:w-48 h-48 sm:h-48 flex-shrink-0">
                       {testimonio.imageUrl ? (
                         <Image
                           src={testimonio.imageUrl}
                           alt={testimonio.name}
                           fill
+                          sizes="(max-width: 640px) 100vw, 192px"
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       ) : (
@@ -167,7 +169,7 @@ export default function TestimoniosSection() {
                     </div>
 
                     {/* Content Side */}
-                    <div className="flex-1 p-5 md:p-6">
+                    <div className="flex-1 min-w-0 p-5 md:p-6">
                       {/* Quote Icon */}
                       <Quote className="w-8 h-8 text-[#8B1A2B]/20 mb-3" />
 

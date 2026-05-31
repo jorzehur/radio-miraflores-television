@@ -35,6 +35,40 @@ async function main() {
     console.log('✅ Hero Section creada')
   }
 
+  // 2.5 Video Ranking Section
+  const existingVideoRankingSection = await prisma.videoRankingSection.findFirst()
+  if (!existingVideoRankingSection) {
+    await prisma.videoRankingSection.create({
+      data: {
+        subtitle: 'Ranking en video',
+        title: 'Video Ranking',
+        description: 'Una programacion continua con los videos de YouTube que mas suenan en Radio Miraflores',
+        ctaText: 'Abrir canal en YouTube',
+        ctaLink: 'https://www.youtube.com/@RADIOMIRAFLORESTELEVISION',
+      }
+    })
+    console.log('✅ Video Ranking Section creada')
+  }
+
+  const existingVideoRankingItems = await prisma.videoRankingItem.count()
+  if (existingVideoRankingItems === 0) {
+    await prisma.videoRankingItem.createMany({
+      data: [
+        { title: 'Bohemian Rhapsody', artist: 'Queen', youtubeUrl: 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ', videoId: 'fJ9rUzIMcZQ', thumbnailUrl: 'https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg', sortOrder: 1 },
+        { title: 'Hotel California', artist: 'Eagles', youtubeUrl: 'https://www.youtube.com/watch?v=BciS5krYL80', videoId: 'BciS5krYL80', thumbnailUrl: 'https://i.ytimg.com/vi/BciS5krYL80/hqdefault.jpg', sortOrder: 2 },
+        { title: 'Stairway to Heaven', artist: 'Led Zeppelin', youtubeUrl: 'https://www.youtube.com/watch?v=QkF3oxziUI4', videoId: 'QkF3oxziUI4', thumbnailUrl: 'https://i.ytimg.com/vi/QkF3oxziUI4/hqdefault.jpg', sortOrder: 3 },
+        { title: 'Sweet Child O Mine', artist: 'Guns N Roses', youtubeUrl: 'https://www.youtube.com/watch?v=1w7OgIMMRc4', videoId: '1w7OgIMMRc4', thumbnailUrl: 'https://i.ytimg.com/vi/1w7OgIMMRc4/hqdefault.jpg', sortOrder: 4 },
+        { title: 'Smells Like Teen Spirit', artist: 'Nirvana', youtubeUrl: 'https://www.youtube.com/watch?v=hTWKbfoikeg', videoId: 'hTWKbfoikeg', thumbnailUrl: 'https://i.ytimg.com/vi/hTWKbfoikeg/hqdefault.jpg', sortOrder: 5 },
+        { title: 'November Rain', artist: 'Guns N Roses', youtubeUrl: 'https://www.youtube.com/watch?v=8SbUC-UaAxE', videoId: '8SbUC-UaAxE', thumbnailUrl: 'https://i.ytimg.com/vi/8SbUC-UaAxE/hqdefault.jpg', sortOrder: 6 },
+        { title: 'Livin on a Prayer', artist: 'Bon Jovi', youtubeUrl: 'https://www.youtube.com/watch?v=lDK9QqIzhwk', videoId: 'lDK9QqIzhwk', thumbnailUrl: 'https://i.ytimg.com/vi/lDK9QqIzhwk/hqdefault.jpg', sortOrder: 7 },
+        { title: 'Zombie', artist: 'The Cranberries', youtubeUrl: 'https://www.youtube.com/watch?v=6Ejga4kJUts', videoId: '6Ejga4kJUts', thumbnailUrl: 'https://i.ytimg.com/vi/6Ejga4kJUts/hqdefault.jpg', sortOrder: 8 },
+        { title: 'Enter Sandman', artist: 'Metallica', youtubeUrl: 'https://www.youtube.com/watch?v=CD-E-LDc384', videoId: 'CD-E-LDc384', thumbnailUrl: 'https://i.ytimg.com/vi/CD-E-LDc384/hqdefault.jpg', sortOrder: 9 },
+        { title: 'With or Without You', artist: 'U2', youtubeUrl: 'https://www.youtube.com/watch?v=XmSdTa9kaiQ', videoId: 'XmSdTa9kaiQ', thumbnailUrl: 'https://i.ytimg.com/vi/XmSdTa9kaiQ/hqdefault.jpg', sortOrder: 10 },
+      ]
+    })
+    console.log('✅ Video Ranking Items creados')
+  }
+
   // 3. Ranking Items
   const existingRanking = await prisma.rankingItem.count()
   if (existingRanking === 0) {
@@ -188,10 +222,10 @@ async function main() {
   if (existingRedes === 0) {
     await prisma.redSocial.createMany({
       data: [
-        { platform: 'youtube', url: 'https://www.youtube.com/@RADIOMIRAFLORESTELEVISION', username: '@RADIOMIRAFLORESTELEVISION', followers: '10K suscriptores', sortOrder: 1 },
+        { platform: 'youtube', url: 'https://www.youtube.com/@RADIOMIRAFLORESTELEVISION', embedUrl: 'https://www.youtube.com/embed/F3W_aR26Cbo?autoplay=0', username: '@RADIOMIRAFLORESTELEVISION', followers: '10K suscriptores', sortOrder: 1 },
         { platform: 'instagram', url: 'https://www.instagram.com/radiomiraflorestelevision/', username: '@radiomiraflorestelevision', followers: '25K seguidores', sortOrder: 2 },
         { platform: 'twitter', url: 'https://x.com/Rmiraflorestv', username: '@Rmiraflorestv', followers: '8K seguidores', sortOrder: 3 },
-        { platform: 'facebook', url: 'https://facebook.com/radiomiraflorestelevision', username: '@radiomiraflorestelevision', followers: '50K seguidores', sortOrder: 4 },
+        { platform: 'facebook', url: 'https://facebook.com/radiomiraflorestelevision', embedUrl: 'https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fradiomiraflorestelevision%2Fposts%2Fpfbid02uRk3eRAGLoSpX6DtULxF9d7PtFTkynQkyonRf7vwguCGoWo9qAXwn41a9Qdv3vvyl&show_text=true&width=500', username: '@radiomiraflorestelevision', followers: '50K seguidores', sortOrder: 4 },
         { platform: 'tiktok', url: 'https://tiktok.com/@radiomiraflorestelevision', username: '@radiomiraflorestelevision', followers: '15K seguidores', sortOrder: 5 },
       ]
     })

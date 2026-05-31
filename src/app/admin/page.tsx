@@ -8,13 +8,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const [ranking, noticias, testimonios, redes] = await Promise.all([
+        const [videoRanking, ranking, noticias, testimonios, redes] = await Promise.all([
+          fetch('/api/admin/video-ranking').then(r => r.json()),
           fetch('/api/admin/ranking').then(r => r.json()),
           fetch('/api/admin/noticias').then(r => r.json()),
           fetch('/api/admin/testimonios').then(r => r.json()),
           fetch('/api/admin/redes').then(r => r.json()),
         ])
         setStats({
+          videoRanking: Array.isArray(videoRanking?.items) ? videoRanking.items.length : 0,
           ranking: Array.isArray(ranking) ? ranking.length : 0,
           noticias: Array.isArray(noticias?.items) ? noticias.items.length : 0,
           testimonios: Array.isArray(testimonios?.items) ? testimonios.items.length : 0,
@@ -27,6 +29,7 @@ export default function AdminDashboard() {
 
   const cards = [
     { label: 'Hero', icon: '🎬', href: '/admin/hero', color: 'from-blue-500 to-blue-600' },
+    { label: 'Video Ranking', icon: '📺', href: '/admin/video-ranking', count: stats.videoRanking, color: 'from-rose-500 to-pink-600' },
     { label: 'Ranking', icon: '🏆', href: '/admin/ranking', count: stats.ranking, color: 'from-yellow-500 to-amber-600' },
     { label: 'Nosotros', icon: '❤️', href: '/admin/nosotros', color: 'from-pink-500 to-rose-600' },
     { label: 'Noticias', icon: '📰', href: '/admin/noticias', count: stats.noticias, color: 'from-green-500 to-emerald-600' },

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { ThumbsUp, MessageCircle, Share2, Clock, ExternalLink } from 'lucide-react'
 
 interface NoticiaItem {
@@ -75,6 +76,7 @@ function formatDate(dateStr: string): string {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
+    if (diffMins < 1) return 'Ahora'
     if (diffMins < 60) return `Hace ${diffMins} min`
     if (diffHours < 24) return `Hace ${diffHours} horas`
     if (diffDays < 7) return `Hace ${diffDays} días`
@@ -84,11 +86,12 @@ function formatDate(dateStr: string): string {
   }
 }
 
-export default function NoticiasSection() {
-  const [data, setData] = useState<NoticiasData>(defaultData)
-  const [isLoading, setIsLoading] = useState(true)
+export default function NoticiasSection({ initialData }: { initialData?: NoticiasData | null }) {
+  const [data, setData] = useState<NoticiasData>(initialData ?? defaultData)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
+    if (initialData) return
     let isMounted = true
 
     async function fetchNoticias() {
@@ -124,7 +127,7 @@ export default function NoticiasSection() {
   const displayNoticias = (data.items && data.items.length > 0 ? data.items : fallbackItems).slice(0, maxVisible)
 
   return (
-    <section id="noticias" className="py-20 md:py-28 bg-white">
+    <section id="noticias" className="py-20 md:py-28 bg-gradient-to-b from-[#FFF0F2] via-white to-[#F3F7FA]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -133,12 +136,12 @@ export default function NoticiasSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 rounded-full mb-4">
-            <MessageCircle className="w-4 h-4 text-blue-600" />
-            <span className="text-blue-600 text-sm font-medium">{data.subtitle}</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#8B1A2B]/10 rounded-full mb-4">
+            <MessageCircle className="w-4 h-4 text-[#8B1A2B]" />
+            <span className="text-[#8B1A2B] text-sm font-medium">{data.subtitle}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">{data.title}</h2>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto">
+          <p className="text-gray-500 text-lg max-w-xl mx-auto font-medium">
             {data.description}
           </p>
         </motion.div>
@@ -155,7 +158,7 @@ export default function NoticiasSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.15 }}
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden"
+                className="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/75 overflow-hidden hover:border-[#8B1A2B]/10"
               >
                 {/* Header */}
                 <div className="p-4 pb-3">
@@ -177,8 +180,8 @@ export default function NoticiasSection() {
                       <h4 className="font-bold text-gray-900 text-sm">
                         {noticia.author || 'Radio Miraflores TV'}
                       </h4>
-                      <div className="flex items-center gap-1.5 text-gray-400 text-xs">
-                        <Clock className="w-3 h-3" />
+                      <div className="flex items-center gap-1.5 text-gray-400 text-xs font-medium">
+                        <Clock className="w-3.5 h-3.5" />
                         <span>{noticia.createdAt ? formatDate(noticia.createdAt) : 'Hace un momento'}</span>
                         {isFacebookPost && (
                           <>
@@ -196,7 +199,7 @@ export default function NoticiasSection() {
                 {/* Content - Facebook embed posts */}
                 {isFacebookPost && noticia.facebookEmbedUrl && (
                   <div className="px-4 pb-3">
-                    <h3 className="text-gray-800 font-semibold text-base mb-3">{noticia.title}</h3>
+                    <h3 className="text-gray-800 font-bold text-base mb-3 leading-snug">{noticia.title}</h3>
                     <div className="flex justify-center">
                       <iframe
                         src={noticia.facebookEmbedUrl}
@@ -207,7 +210,7 @@ export default function NoticiasSection() {
                         frameBorder="0"
                         allowFullScreen={true}
                         allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                        className="rounded-lg"
+                        className="rounded-lg shadow-sm border border-gray-100"
                       />
                     </div>
                   </div>
@@ -216,7 +219,7 @@ export default function NoticiasSection() {
                 {/* Content - Facebook posts without embed URL (fallback) */}
                 {isFacebookPost && !noticia.facebookEmbedUrl && noticia.title && (
                   <div className="px-4 pb-3">
-                    <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
+                    <h3 className="text-gray-800 font-bold text-base mb-1.5 leading-snug">{noticia.title}</h3>
                     {contentText && (
                       <p className="text-gray-600 text-sm leading-relaxed">{contentText}</p>
                     )}
@@ -226,7 +229,7 @@ export default function NoticiasSection() {
                 {/* Content - Text posts */}
                 {!isFacebookPost && contentText && (
                   <div className="px-4 pb-3">
-                    <h3 className="text-gray-800 font-semibold text-base mb-1">{noticia.title}</h3>
+                    <h3 className="text-gray-800 font-bold text-base mb-1.5 leading-snug">{noticia.title}</h3>
                     <p className="text-gray-600 text-sm leading-relaxed">{contentText}</p>
                   </div>
                 )}
@@ -234,31 +237,33 @@ export default function NoticiasSection() {
                 {/* Title-only for posts without content */}
                 {!isFacebookPost && !contentText && noticia.title && (
                   <div className="px-4 pb-3">
-                    <h3 className="text-gray-800 font-semibold text-base">{noticia.title}</h3>
+                    <h3 className="text-gray-800 font-bold text-base leading-snug">{noticia.title}</h3>
                   </div>
                 )}
 
                 {/* Image - only show for non-Facebook posts with an image */}
                 {!isFacebookPost && noticia.imageUrl && (
-                  <div className="relative cursor-pointer group">
-                    <img
+                  <div className="relative cursor-pointer group overflow-hidden border-y border-gray-50 h-56 sm:h-72">
+                    <Image
                       src={noticia.imageUrl}
                       alt={noticia.title}
-                      className="w-full h-56 sm:h-72 object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-[1.015] transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, 672px"
                     />
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="px-2 py-1">
+                <div className="px-2 py-1 bg-gray-50/50 border-t border-gray-100">
                   <div className="flex items-center">
-                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer">
                       <ThumbsUp className="w-4 h-4" /> Me gusta
                     </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer">
                       <MessageCircle className="w-4 h-4" /> Comentar
                     </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 font-medium text-sm transition-colors">
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer">
                       <Share2 className="w-4 h-4" /> Compartir
                     </button>
                   </div>

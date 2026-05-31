@@ -3,8 +3,8 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000 2>&1 | tee dev.log",
-    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
+    "dev": "next dev -p 3000 --webpack",
+    "build": "next build --webpack",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
     "db:push": "prisma db push",
@@ -59,7 +59,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
-    "framer-motion": "^12.39.0",
+    "framer-motion": "^12.40.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^1.16.0",
     "next": "^16.1.1",
@@ -86,6 +86,7 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@nasr-shaer/agent-forge": "^1.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^3.0.0",
     "@types/react": "^19",
