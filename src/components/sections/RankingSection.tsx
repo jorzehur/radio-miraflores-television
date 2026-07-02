@@ -42,6 +42,8 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 }
 
+const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 export default function RankingSection({ initialData }: { initialData?: RankingItem[] | null }) {
   const [ranking, setRanking] = useState<RankingItem[]>(initialData ?? fallbackRanking)
   const [isLoading, setIsLoading] = useState(!initialData)
@@ -114,8 +116,8 @@ export default function RankingSection({ initialData }: { initialData?: RankingI
 
         <motion.div
           variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
+          initial={prefersReducedMotion ? "visible" : "hidden"}
+          whileInView={prefersReducedMotion ? undefined : "visible"}
           viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6"
         >
@@ -176,7 +178,7 @@ export default function RankingSection({ initialData }: { initialData?: RankingI
           transition={{ delay: 0.6 }}
           className="text-center mt-10"
         >
-          <a href="#" className="inline-flex items-center gap-2 px-6 py-3 bg-[#8B1A2B]/10 text-[#8B1A2B] rounded-full font-semibold hover:bg-[#8B1A2B]/20 transition-all duration-300 border border-[#8B1A2B]/20">
+          <a href="#" className="inline-flex items-center gap-2 px-6 py-3 bg-[#8B1A2B]/10 text-[#8B1A2B] rounded-full font-semibold hover:bg-[#8B1A2B]/20 transition-all duration-300 border border-[#8B1A2B]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B1A2B] focus-visible:ring-offset-2">
             <Music className="w-4 h-4" />
             Ver Ranking Completo
           </a>

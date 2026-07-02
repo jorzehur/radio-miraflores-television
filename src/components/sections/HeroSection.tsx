@@ -91,7 +91,7 @@ export default function HeroSection({ initialData }: { initialData?: HeroData | 
       </div>
 
       {/* Animated Sound Waves */}
-      <div className="absolute inset-0 z-[1] overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 z-[1] overflow-hidden pointer-events-none" aria-hidden="true">
         {[...Array(5)].map((_, i) => (
           <motion.div
             key={i}
@@ -133,14 +133,14 @@ export default function HeroSection({ initialData }: { initialData?: HeroData | 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href={hero.ctaPrimaryLink || '#ranking'}
-              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#8B1A2B] to-[#A63346] rounded-full text-white font-bold text-lg shadow-xl shadow-[#8B1A2B]/20 hover:shadow-[#8B1A2B]/35 transition-all duration-300 hover:scale-105 cursor-pointer"
+              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#8B1A2B] to-[#A63346] rounded-full text-white font-bold text-lg shadow-xl shadow-[#8B1A2B]/20 hover:shadow-[#8B1A2B]/35 transition-all duration-300 hover:scale-105 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#8B1A2B]"
             >
               {hero.ctaPrimaryText}
             </a>
 
             <a
               href={hero.ctaSecondaryLink || '#noticias'}
-              className="flex items-center gap-2 px-8 py-4 border-2 border-[#8B1A2B]/30 text-[#8B1A2B] rounded-full font-bold text-lg hover:bg-[#8B1A2B]/5 transition-all duration-300 hover:scale-105 backdrop-blur-sm cursor-pointer"
+              className="flex items-center gap-2 px-8 py-4 border-2 border-[#8B1A2B]/30 text-[#8B1A2B] rounded-full font-bold text-lg hover:bg-[#8B1A2B]/5 transition-all duration-300 hover:scale-105 backdrop-blur-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B1A2B] focus-visible:ring-offset-2"
             >
               {hero.ctaSecondaryText}
             </a>

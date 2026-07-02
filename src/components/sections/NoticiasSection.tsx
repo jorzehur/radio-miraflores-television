@@ -257,13 +257,13 @@ export default function NoticiasSection({ initialData }: { initialData?: Noticia
                 {/* Actions */}
                 <div className="px-2 py-1 bg-gray-50/50 border-t border-gray-100">
                   <div className="flex items-center">
-                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer">
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer" aria-label="Me gusta esta noticia">
                       <ThumbsUp className="w-4 h-4" /> Me gusta
                     </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer">
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer" aria-label="Comentar esta noticia">
                       <MessageCircle className="w-4 h-4" /> Comentar
                     </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer">
+                    <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-[#8B1A2B]/5 hover:text-[#8B1A2B] text-gray-600 font-bold text-sm transition-all duration-200 cursor-pointer" aria-label="Compartir esta noticia">
                       <Share2 className="w-4 h-4" /> Compartir
                     </button>
                   </div>

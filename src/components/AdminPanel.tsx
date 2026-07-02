@@ -518,7 +518,7 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
           value={value || ''}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#8B1A2B]/30 focus:border-[#8B1A2B] outline-none transition-colors"
+          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#8B1A2B]/30 focus:border-[#8B1A2B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B1A2B]/30 focus-visible:border-[#8B1A2B] outline-none transition-colors"
         />
       </div>
     )
@@ -554,7 +554,7 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                 <div key={item.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#8B1A2B]">#{item.position}</span>
-                    <button onClick={() => deleteRankingItem(item.id)} className="text-red-400 hover:text-red-600 transition-colors">
+                    <button onClick={() => deleteRankingItem(item.id)} className="text-red-400 hover:text-red-600 transition-colors" aria-label="Eliminar canción">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -652,7 +652,7 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                       }} className={`text-xs px-2 py-0.5 rounded ${item.published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {item.published ? 'Publicado' : 'Borrador'}
                       </button>
-                      <button onClick={() => deleteNoticiaItem(item.id)} className="text-red-400 hover:text-red-600">
+                      <button onClick={() => deleteNoticiaItem(item.id)} className="text-red-400 hover:text-red-600" aria-label="Eliminar noticia">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -692,7 +692,7 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                 <div key={item.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#8B1A2B]">{item.name}</span>
-                    <button onClick={() => deleteTestimonioItem(item.id)} className="text-red-400 hover:text-red-600">
+                    <button onClick={() => deleteTestimonioItem(item.id)} className="text-red-400 hover:text-red-600" aria-label="Eliminar testimonio">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -735,7 +735,7 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                 <div key={item.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#8B1A2B] capitalize">{item.platform}</span>
-                    <button onClick={() => deleteRedItem(item.id)} className="text-red-400 hover:text-red-600">
+                    <button onClick={() => deleteRedItem(item.id)} className="text-red-400 hover:text-red-600" aria-label="Eliminar red social">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -823,7 +823,7 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                     type="text"
                     value={videoRankingSection[key] || ''}
                     onChange={e => setVideoRankingSection({ ...videoRankingSection, [key]: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none"
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#8B1A2B]/30 focus-visible:border-[#8B1A2B]"
                   />
                 </div>
               ))}
@@ -845,17 +845,17 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => toggleVideoRankingActive(item.id, item.active)} className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                      <button onClick={() => toggleVideoRankingActive(item.id, item.active)} className="text-xs text-gray-500 hover:text-gray-700 transition-colors" aria-label={item.active ? 'Ocultar video' : 'Mostrar video'}>
                         {item.active ? 'Ocultar' : 'Mostrar'}
                       </button>
-                      <button onClick={() => deleteVideoRankingItem(item.id)} className="text-red-400 hover:text-red-600 transition-colors">
+                      <button onClick={() => deleteVideoRankingItem(item.id)} className="text-red-400 hover:text-red-600 transition-colors" aria-label="Eliminar video">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                   <div className="flex gap-3">
                     {item.thumbnailUrl && (
-                      <img src={item.thumbnailUrl} alt={item.title} className="w-20 h-14 rounded-lg object-cover flex-shrink-0" />
+                      <img src={item.thumbnailUrl} alt={item.title} className="w-20 h-14 rounded-lg object-cover flex-shrink-0" width={80} height={56} />
                     )}
                     <div className="min-w-0 flex-1 space-y-2">
                       <input value={item.title} onChange={e => {
@@ -947,11 +947,11 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
                 </h2>
                 <div className="flex items-center gap-2">
                   {isLoggedIn && (
-                    <button onClick={handleLogout} className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors">
+                    <button onClick={handleLogout} className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors" aria-label="Cerrar sesión">
                       <LogOut className="w-3 h-3" /> Salir
                     </button>
                   )}
-                  <button onClick={() => setIsOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                  <button onClick={() => setIsOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors" aria-label="Cerrar panel de administración">
                     <X className="w-5 h-5" />
                   </button>
                 </div>

@@ -143,12 +143,16 @@ export default function InfoSection({ initialData }: { initialData?: InfoData | 
               <h4 className="text-white font-extrabold text-xl mb-1.5">¡Suscríbete!</h4>
               <p className="text-white/80 text-sm mb-4 font-medium">Recibe las últimas noticias y el ranking semanal directamente en tu email</p>
               <div className="flex gap-2">
+                <label htmlFor="newsletter-email" className="sr-only">Correo electrónico para newsletter</label>
                 <input
+                  id="newsletter-email"
                   type="email"
                   placeholder="Tu correo electrónico"
-                  className="flex-1 px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30"
+                  autoComplete="email"
+                  spellCheck={false}
+                  className="flex-1 px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus-visible:ring-2 focus-visible:ring-white/30"
                 />
-                <button className="px-5 py-2.5 bg-[#F5A623] hover:bg-[#FFD166] hover:text-[#8B1A2B] text-white rounded-lg font-bold text-sm shadow-md hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer">
+                <button className="px-5 py-2.5 bg-[#F5A623] hover:bg-[#FFD166] hover:text-[#8B1A2B] text-white rounded-lg font-bold text-sm shadow-md hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer" aria-label="Suscribirse al newsletter">
                   <Send className="w-3.5 h-3.5" />
                 </button>
               </div>

@@ -179,9 +179,9 @@ export default function TestimoniosSection({ initialData }: { initialData?: Test
                       </p>
 
                       {/* Rating */}
-                      <div className="flex gap-0.5 mb-3">
+                      <div className="flex gap-0.5 mb-3" role="img" aria-label={`Calificación: ${testimonio.rating || 5} de 5 estrellas`}>
                         {[...Array(testimonio.rating || 5)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 text-[#F5A623] fill-[#F5A623]" />
+                          <Star key={i} className="w-4 h-4 text-[#F5A623] fill-[#F5A623]" aria-hidden="true" />
                         ))}
                       </div>
 

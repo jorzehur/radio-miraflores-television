@@ -31,6 +31,9 @@ export const metadata: Metadata = {
     siteName: "Radio Miraflores Televisión",
     type: "website",
   },
+  other: {
+    "theme-color": "#8B1A2B",
+  },
 };
 
 export default function RootLayout({
