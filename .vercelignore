@@ -1,0 +1,27 @@
+# Archivos de servidor VPS (no necesarios en Vercel)
+*.sh
+Caddyfile
+server*.js
+simple-server*.js
+unified-server.js
+production-server.js
+static-server.js
+static-index.html
+port-proxy.js
+fetch-wp-data.js
+keep-alive*.sh
+watchdog.sh
+run-server.sh
+serve.sh
+resilient-server.sh
+server.pid
+
+# Bases de datos locales
+prisma/db/*.db
+db/*.db
+*.db
+
+# Logs
+*.log
+dev.log
+server.log
