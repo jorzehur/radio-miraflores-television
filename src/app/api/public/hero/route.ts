@@ -1,7 +1,7 @@
-import { db } from '@/lib/db'
+import { readContentFile } from '@/lib/content-admin'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const hero = await db.heroSection.findFirst()
+  const hero = readContentFile('hero.json')
   return NextResponse.json(hero)
 }

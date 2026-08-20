@@ -1,25 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { requireAuth } from '@/lib/admin-auth'
+import { getAdminUser } from '@/lib/admin-auth'
+import { readContentFile, writeContentFile, commitContentFile } from '@/lib/content-admin'
+import { NextResponse } from 'next/server'
 
-export const PUT = requireAuth(async (request: NextRequest) => {
+export async function PUT(request: Request) {
+  const admin = await getAdminUser()
+  if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   try {
     const data = await request.json()
-    const currentSection = await db.testimoniosSection.findFirst()
-
-    if (!currentSection) {
-      const section = await db.testimoniosSection.create({ data })
-      return NextResponse.json(section)
+    const testimonios = readContentFile<any>('testimonios.json') || { id: 'default', items: [] }
+    
+    const updated = {
+      ...testimonios,
+      ...data,
+      updatedAt: new Date().toISOString(),
     }
 
-    const section = await db.testimoniosSection.update({
-      where: { id: currentSection.id },
-      data,
-    })
+    writeContentFile('testimonios.json', updated)
+    await commitContentFile('testimonios.json', 'Update testimonios section')
 
-    return NextResponse.json(section)
+    return NextResponse.json(updated)
   } catch (error) {
     console.error('Update testimonios section error:', error)
     return NextResponse.json({ error: 'Error al actualizar sección de testimonios' }, { status: 500 })
   }
-})
+}

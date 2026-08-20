@@ -1,12 +1,7 @@
-import { db } from '@/lib/db'
+import { readContentFile } from '@/lib/content-admin'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const section = await db.videoRankingSection.findFirst()
-  const items = await db.videoRankingItem.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: 'asc' },
-  })
-
-  return NextResponse.json({ ...section, items })
+  const videoRanking = readContentFile('video-ranking.json')
+  return NextResponse.json(videoRanking)
 }

@@ -1,12 +1,12 @@
-import { db } from '@/lib/db'
 import { getAdminUser } from '@/lib/admin-auth'
+import { readContentFile, writeContentFile, commitContentFile } from '@/lib/content-admin'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   const admin = await getAdminUser()
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const hero = await db.heroSection.findFirst()
+  const hero = readContentFile('hero.json')
   return NextResponse.json(hero)
 }
 
@@ -15,13 +15,20 @@ export async function PUT(request: Request) {
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const data = await request.json()
-  const existing = await db.heroSection.findFirst()
-
-  let hero
-  if (existing) {
-    hero = await db.heroSection.update({ where: { id: existing.id }, data })
-  } else {
-    hero = await db.heroSection.create({ data })
+  const heroData = {
+    ...data,
+    updatedAt: new Date().toISOString(),
   }
-  return NextResponse.json(hero)
+
+  const saved = writeContentFile('hero.json', heroData)
+  if (!saved) {
+    return NextResponse.json({ error: 'Error guardando localmente' }, { status: 500 })
+  }
+
+  const committed = await commitContentFile('hero.json', `Update hero content`)
+  if (!committed) {
+    console.warn('Commit a GitHub falló, pero se guardó localmente')
+  }
+
+  return NextResponse.json(heroData)
 }

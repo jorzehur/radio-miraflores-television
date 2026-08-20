@@ -1,5 +1,5 @@
-import { db } from '@/lib/db'
 import { getAdminUser } from '@/lib/admin-auth'
+import { readContentFile, writeContentFile, commitContentFile } from '@/lib/content-admin'
 import { buildYouTubeThumbnail, extractYouTubeVideoId } from '@/lib/youtube'
 import { NextResponse } from 'next/server'
 
@@ -20,8 +20,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     updateData.thumbnailUrl = buildYouTubeThumbnail(videoId)
   }
 
-  const item = await db.videoRankingItem.update({ where: { id }, data: updateData })
-  return NextResponse.json(item)
+  const videoRanking = readContentFile<any>('video-ranking.json')
+  
+  if (!videoRanking) {
+    return NextResponse.json({ error: 'Sección no encontrada' }, { status: 404 })
+  }
+
+  const index = videoRanking.items.findIndex((item: any) => item.id === id)
+  if (index === -1) {
+    return NextResponse.json({ error: 'Item no encontrado' }, { status: 404 })
+  }
+
+  videoRanking.items[index] = {
+    ...videoRanking.items[index],
+    ...updateData,
+    updatedAt: new Date().toISOString(),
+  }
+  videoRanking.updatedAt = new Date().toISOString()
+
+  writeContentFile('video-ranking.json', videoRanking)
+  await commitContentFile('video-ranking.json', 'Update video ranking item')
+
+  return NextResponse.json(videoRanking.items[index])
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -29,6 +49,17 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { id } = await params
-  await db.videoRankingItem.delete({ where: { id } })
+  const videoRanking = readContentFile<any>('video-ranking.json')
+  
+  if (!videoRanking) {
+    return NextResponse.json({ error: 'Sección no encontrada' }, { status: 404 })
+  }
+
+  videoRanking.items = videoRanking.items.filter((item: any) => item.id !== id)
+  videoRanking.updatedAt = new Date().toISOString()
+
+  writeContentFile('video-ranking.json', videoRanking)
+  await commitContentFile('video-ranking.json', 'Delete video ranking item')
+
   return NextResponse.json({ success: true })
 }

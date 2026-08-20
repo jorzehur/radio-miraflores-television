@@ -1,12 +1,12 @@
-import { db } from '@/lib/db'
 import { getAdminUser } from '@/lib/admin-auth'
+import { readContentFile, writeContentFile, commitContentFile } from '@/lib/content-admin'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   const admin = await getAdminUser()
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const info = await db.infoSection.findFirst()
+  const info = readContentFile('info.json')
   return NextResponse.json(info)
 }
 
@@ -15,13 +15,13 @@ export async function PUT(request: Request) {
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const data = await request.json()
-  const existing = await db.infoSection.findFirst()
-
-  let info
-  if (existing) {
-    info = await db.infoSection.update({ where: { id: existing.id }, data })
-  } else {
-    info = await db.infoSection.create({ data })
+  const infoData = {
+    ...data,
+    updatedAt: new Date().toISOString(),
   }
-  return NextResponse.json(info)
+
+  writeContentFile('info.json', infoData)
+  await commitContentFile('info.json', 'Update info content')
+
+  return NextResponse.json(infoData)
 }

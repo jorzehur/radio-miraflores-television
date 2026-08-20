@@ -6,5 +6,5 @@ export async function GET() {
   if (!admin) {
     return NextResponse.json({ authenticated: false }, { status: 401 })
   }
-  return NextResponse.json({ authenticated: true, admin: { id: admin.id, name: admin.name, email: admin.email } })
+  return NextResponse.json({ authenticated: true, admin: { id: admin.id, name: 'Administrador', email: admin.email } })
 }

@@ -1,12 +1,12 @@
-import { db } from '@/lib/db'
 import { getAdminUser } from '@/lib/admin-auth'
+import { readContentFile, writeContentFile, commitContentFile } from '@/lib/content-admin'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   const admin = await getAdminUser()
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const footer = await db.footerSection.findFirst()
+  const footer = readContentFile('footer.json')
   return NextResponse.json(footer)
 }
 
@@ -15,13 +15,13 @@ export async function PUT(request: Request) {
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const data = await request.json()
-  const existing = await db.footerSection.findFirst()
-
-  let footer
-  if (existing) {
-    footer = await db.footerSection.update({ where: { id: existing.id }, data })
-  } else {
-    footer = await db.footerSection.create({ data })
+  const footerData = {
+    ...data,
+    updatedAt: new Date().toISOString(),
   }
-  return NextResponse.json(footer)
+
+  writeContentFile('footer.json', footerData)
+  await commitContentFile('footer.json', 'Update footer content')
+
+  return NextResponse.json(footerData)
 }

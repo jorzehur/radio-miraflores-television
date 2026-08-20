@@ -1,5 +1,5 @@
-import { db } from '@/lib/db'
 import { getAdminUser } from '@/lib/admin-auth'
+import { readContentFile, writeContentFile, commitContentFile } from '@/lib/content-admin'
 import { NextResponse } from 'next/server'
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -8,8 +8,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const { id } = await params
   const data = await request.json()
-  const item = await db.rankingItem.update({ where: { id }, data })
-  return NextResponse.json(item)
+  const items = readContentFile<any[]>('ranking.json') || []
+  
+  const index = items.findIndex((item: any) => item.id === id)
+  if (index === -1) {
+    return NextResponse.json({ error: 'Item no encontrado' }, { status: 404 })
+  }
+
+  items[index] = {
+    ...items[index],
+    ...data,
+    updatedAt: new Date().toISOString(),
+  }
+
+  writeContentFile('ranking.json', items)
+  await commitContentFile('ranking.json', 'Update ranking item')
+
+  return NextResponse.json(items[index])
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -17,6 +32,11 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { id } = await params
-  await db.rankingItem.delete({ where: { id } })
+  const items = readContentFile<any[]>('ranking.json') || []
+  
+  const filtered = items.filter((item: any) => item.id !== id)
+  writeContentFile('ranking.json', filtered)
+  await commitContentFile('ranking.json', 'Delete ranking item')
+
   return NextResponse.json({ success: true })
 }

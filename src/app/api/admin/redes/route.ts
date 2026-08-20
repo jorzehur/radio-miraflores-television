@@ -1,14 +1,13 @@
-import { db } from '@/lib/db'
 import { getAdminUser } from '@/lib/admin-auth'
+import { readContentFile, writeContentFile, commitContentFile } from '@/lib/content-admin'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   const admin = await getAdminUser()
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const section = await db.redesSection.findFirst()
-  const items = await db.redSocial.findMany({ orderBy: { sortOrder: 'asc' } })
-  return NextResponse.json({ ...section, items })
+  const redes = readContentFile('redes.json')
+  return NextResponse.json(redes)
 }
 
 export async function PUT(request: Request) {
@@ -16,22 +15,13 @@ export async function PUT(request: Request) {
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const data = await request.json()
-  const existing = await db.redesSection.findFirst()
-
-  let section
-  if (existing) {
-    section = await db.redesSection.update({ where: { id: existing.id }, data })
-  } else {
-    section = await db.redesSection.create({ data })
+  const redesData = {
+    ...data,
+    updatedAt: new Date().toISOString(),
   }
-  return NextResponse.json(section)
-}
 
-export async function POST(request: Request) {
-  const admin = await getAdminUser()
-  if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  writeContentFile('redes.json', redesData)
+  await commitContentFile('redes.json', 'Update redes content')
 
-  const data = await request.json()
-  const item = await db.redSocial.create({ data })
-  return NextResponse.json(item)
+  return NextResponse.json(redesData)
 }
