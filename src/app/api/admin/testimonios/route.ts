@@ -21,7 +21,7 @@ export async function PUT(request: Request) {
   }
 
   writeContentFile('testimonios.json', testimoniosData)
-  await commitContentFile('testimonios.json', 'Update testimonios content')
+  await commitContentFile('testimonios.json', 'Update testimonios content', testimoniosData)
 
   return NextResponse.json(testimoniosData)
 }

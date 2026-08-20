@@ -113,6 +113,7 @@ export default function RankingSection({ initialData }: { initialData?: RankingI
                       src={item.imageUrl}
                       alt={`${item.album} cover`}
                       fill
+                      unoptimized
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     />

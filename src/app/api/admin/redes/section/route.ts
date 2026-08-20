@@ -17,7 +17,7 @@ export async function PUT(request: Request) {
     }
 
     writeContentFile('redes.json', updated)
-    await commitContentFile('redes.json', 'Update redes section')
+    await commitContentFile('redes.json', 'Update redes section', updated)
 
     return NextResponse.json(updated)
   } catch (error) {

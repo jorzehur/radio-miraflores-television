@@ -212,7 +212,7 @@ export default function VideoRankingSection({ initialData }: { initialData?: Vid
                       className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${isCurrent ? 'border-[#8B1A2B]/40 bg-[#8B1A2B]/6 shadow-sm' : 'border-gray-100 bg-white hover:border-[#8B1A2B]/20 hover:bg-[#fff7f8]'}`}
                     >
                       <div className="relative h-20 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
-                        <Image src={item.thumbnailUrl || buildYouTubeThumbnail(item.videoId)} alt={item.title} fill className="object-cover" sizes="128px" />
+                        <Image src={item.thumbnailUrl || buildYouTubeThumbnail(item.videoId)} alt={item.title} fill unoptimized className="object-cover" sizes="128px" />
                         <div className={`absolute inset-0 flex items-center justify-center ${isCurrent ? 'bg-[#8B1A2B]/35' : 'bg-black/20'}`}>
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#8B1A2B] shadow-md">
                             <Play className="ml-0.5 h-4 w-4 fill-current" />

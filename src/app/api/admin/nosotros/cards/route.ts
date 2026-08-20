@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   nosotros.cards.push(newCard)
   nosotros.updatedAt = new Date().toISOString()
   writeContentFile('nosotros.json', nosotros)
-  await commitContentFile('nosotros.json', 'Add nosotros card')
+  await commitContentFile('nosotros.json', 'Add nosotros card', nosotros)
 
   return NextResponse.json(newCard)
 }

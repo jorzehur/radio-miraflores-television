@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   
   items.push(newItem)
   writeContentFile('ranking.json', items)
-  await commitContentFile('ranking.json', 'Add ranking item')
+  await commitContentFile('ranking.json', 'Add ranking item', items)
 
   return NextResponse.json(newItem)
 }

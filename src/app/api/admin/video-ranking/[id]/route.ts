@@ -39,7 +39,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   videoRanking.updatedAt = new Date().toISOString()
 
   writeContentFile('video-ranking.json', videoRanking)
-  await commitContentFile('video-ranking.json', 'Update video ranking item')
+  await commitContentFile('video-ranking.json', 'Update video ranking item', videoRanking)
 
   return NextResponse.json(videoRanking.items[index])
 }
@@ -59,7 +59,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   videoRanking.updatedAt = new Date().toISOString()
 
   writeContentFile('video-ranking.json', videoRanking)
-  await commitContentFile('video-ranking.json', 'Delete video ranking item')
+  await commitContentFile('video-ranking.json', 'Delete video ranking item', videoRanking)
 
   return NextResponse.json({ success: true })
 }

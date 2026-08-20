@@ -21,7 +21,7 @@ export async function PUT(request: Request) {
   }
 
   writeContentFile('video-ranking.json', videoRankingData)
-  await commitContentFile('video-ranking.json', 'Update video ranking content')
+  await commitContentFile('video-ranking.json', 'Update video ranking content', videoRankingData)
 
   return NextResponse.json(videoRankingData)
 }

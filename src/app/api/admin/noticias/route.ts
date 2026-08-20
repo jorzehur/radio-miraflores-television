@@ -27,7 +27,7 @@ export async function PUT(request: Request) {
   }
 
   writeContentFile('noticias.json', updated)
-  await commitContentFile('noticias.json', 'Update noticias section')
+  await commitContentFile('noticias.json', 'Update noticias section', updated)
 
   return NextResponse.json(updated)
 }
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   noticias.items.push(newItem)
   noticias.updatedAt = new Date().toISOString()
   writeContentFile('noticias.json', noticias)
-  await commitContentFile('noticias.json', 'Add noticia item')
+  await commitContentFile('noticias.json', 'Add noticia item', noticias)
 
   return NextResponse.json(newItem)
 }

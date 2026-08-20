@@ -22,7 +22,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
 
   writeContentFile('ranking.json', items)
-  await commitContentFile('ranking.json', 'Update ranking item')
+  await commitContentFile('ranking.json', 'Update ranking item', items)
 
   return NextResponse.json(items[index])
 }
@@ -36,7 +36,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   
   const filtered = items.filter((item: any) => item.id !== id)
   writeContentFile('ranking.json', filtered)
-  await commitContentFile('ranking.json', 'Delete ranking item')
+  await commitContentFile('ranking.json', 'Delete ranking item', filtered)
 
   return NextResponse.json({ success: true })
 }

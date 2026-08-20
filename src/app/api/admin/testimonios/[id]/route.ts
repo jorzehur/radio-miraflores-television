@@ -27,7 +27,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   testimonios.updatedAt = new Date().toISOString()
 
   writeContentFile('testimonios.json', testimonios)
-  await commitContentFile('testimonios.json', 'Update testimonio item')
+  await commitContentFile('testimonios.json', 'Update testimonio item', testimonios)
 
   return NextResponse.json(testimonios.items[index])
 }
@@ -47,7 +47,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   testimonios.updatedAt = new Date().toISOString()
 
   writeContentFile('testimonios.json', testimonios)
-  await commitContentFile('testimonios.json', 'Delete testimonio item')
+  await commitContentFile('testimonios.json', 'Delete testimonio item', testimonios)
 
   return NextResponse.json({ success: true })
 }

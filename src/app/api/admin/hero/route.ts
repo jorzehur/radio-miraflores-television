@@ -20,15 +20,12 @@ export async function PUT(request: Request) {
     updatedAt: new Date().toISOString(),
   }
 
-  const saved = writeContentFile('hero.json', heroData)
-  if (!saved) {
-    return NextResponse.json({ error: 'Error guardando localmente' }, { status: 500 })
-  }
-
-  const committed = await commitContentFile('hero.json', `Update hero content`)
+  writeContentFile('hero.json', heroData)
+  const committed = await commitContentFile('hero.json', 'Update hero content', heroData)
   if (!committed) {
-    console.warn('Commit a GitHub falló, pero se guardó localmente')
+    console.warn('Commit a GitHub falló o GITHUB_TOKEN no está configurado')
   }
 
   return NextResponse.json(heroData)
 }
+

@@ -213,6 +213,7 @@ export default function NoticiasSection({ initialData }: { initialData?: Noticia
                       src={noticia.imageUrl}
                       alt={noticia.title}
                       fill
+                      unoptimized
                       className="object-cover group-hover:scale-[1.015] transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, 672px"
                     />

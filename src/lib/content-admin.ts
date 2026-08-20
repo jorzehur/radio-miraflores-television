@@ -22,14 +22,16 @@ export function writeContentFile(filename: string, data: unknown): boolean {
     writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8')
     return true
   } catch (error) {
-    console.error(`Error escribiendo ${filename}:`, error)
+    // In serverless environments like Vercel, the local filesystem is read-only.
+    // Changes are committed to GitHub via the API, which is normal and expected.
+    console.warn(`Aviso: No se pudo escribir localmente en ${filename} (esperado en Vercel/serverless):`, error)
     return false
   }
 }
 
-export async function commitContentFile(filename: string, message: string): Promise<boolean> {
+export async function commitContentFile(filename: string, message: string, dataToCommit?: unknown): Promise<boolean> {
   const filePath = `src/content/${filename}`
-  const data = readContentFile(filename)
+  const data = dataToCommit !== undefined ? dataToCommit : readContentFile(filename)
   if (!data) return false
   
   const content = JSON.stringify(data, null, 2)
@@ -39,3 +41,4 @@ export async function commitContentFile(filename: string, message: string): Prom
 export function generateId(): string {
   return `c${Date.now().toString(36)}${Math.random().toString(36).substring(2, 7)}`
 }
+
