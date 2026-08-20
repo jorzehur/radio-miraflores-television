@@ -1,0 +1,33 @@
+{
+  "id": "cmph2u5dt000ftghsdc26ynib",
+  "subtitle": "Lo que dicen nuestros oyentes",
+  "title": "Testimonios",
+  "description": "Historias reales de quienes viven la magia de la radio",
+  "updatedAt": "2026-05-22T15:30:59.394Z",
+  "items": [
+    {
+      "id": "cmph2u5e9000gtghsqcicfmcw",
+      "name": "María García",
+      "role": "Oyente desde 2005",
+      "quote": "Radio Miraflores Televisión ha sido la banda sonora de mi vida. Desde que la descubrí, cada mañana empieza con la energía que solo el rock y esta radio pueden dar. Los locutores son increíbles, la selección musical es perfecta y me siento parte de una gran familia de rockeros. ¡No puedo imaginar mi día sin sintonizarlos!",
+      "imageUrl": "/images/testimonio-1.png",
+      "rating": 5,
+      "active": true,
+      "sortOrder": 1,
+      "createdAt": "2026-05-22T15:30:59.410Z",
+      "updatedAt": "2026-05-26T06:36:48.883Z"
+    },
+    {
+      "id": "cmph2u5ea000htghs36eh10tw",
+      "name": "Carlos Mendoza",
+      "role": "Oyente desde 2010",
+      "quote": "Desde que sintonizo Radio Miraflores, mi día a día cambió por completo. La música, la energía y la pasión que transmiten es incomparable. Cada programa es una experiencia única que me hace sentir vivo. Gracias por tantos años de rock de calidad.",
+      "imageUrl": "/images/testimonio-2.png",
+      "rating": 5,
+      "active": true,
+      "sortOrder": 2,
+      "createdAt": "2026-05-22T15:30:59.410Z",
+      "updatedAt": "2026-05-22T15:30:59.410Z"
+    }
+  ]
+}

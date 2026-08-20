@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { ThumbsUp, MessageCircle, Share2, Clock, ExternalLink } from 'lucide-react'
@@ -87,41 +86,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function NoticiasSection({ initialData }: { initialData?: NoticiasData | null }) {
-  const [data, setData] = useState<NoticiasData>(initialData ?? defaultData)
-  const [isLoading, setIsLoading] = useState(!initialData)
-
-  useEffect(() => {
-    if (initialData) return
-    let isMounted = true
-
-    async function fetchNoticias() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-
-        const res = await fetch('/api/public/noticias', {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeout)
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const json = await res.json()
-
-        if (!isMounted) return
-        if (json && json.title) {
-          setData(json)
-        }
-      } catch {
-        // Keep fallback data
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchNoticias()
-    return () => { isMounted = false }
-  }, [])
+  const data = initialData ?? defaultData
 
   const maxVisible = data.maxVisible || 4
   const displayNoticias = (data.items && data.items.length > 0 ? data.items : fallbackItems).slice(0, maxVisible)

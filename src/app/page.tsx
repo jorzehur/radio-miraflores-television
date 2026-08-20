@@ -12,7 +12,6 @@ const VideoRankingSection = dynamic(() => import('@/components/sections/VideoRan
 const NoticiasSection = dynamic(() => import('@/components/sections/NoticiasSection'))
 const RedesSection = dynamic(() => import('@/components/sections/RedesSection'))
 const FooterSection = dynamic(() => import('@/components/sections/FooterSection'))
-const AdminPanel = dynamic(() => import('@/components/AdminPanel'))
 
 function SectionFallback({ label }: { label: string }) {
   return (
@@ -68,8 +67,6 @@ export default async function Home() {
           initialInfo={sectionData.info}
         />
       </Suspense>
-
-      <AdminPanel />
     </div>
   )
 }

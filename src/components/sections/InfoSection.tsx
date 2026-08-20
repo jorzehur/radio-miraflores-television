@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
 
@@ -40,41 +39,7 @@ const contactCards = [
 ]
 
 export default function InfoSection({ initialData }: { initialData?: InfoData | null }) {
-  const [data, setData] = useState<InfoData>(initialData ?? defaultData)
-  const [isLoading, setIsLoading] = useState(!initialData)
-
-  useEffect(() => {
-    if (initialData) return
-    let isMounted = true
-
-    async function fetchInfo() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-
-        const res = await fetch('/api/public/info', {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeout)
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const json = await res.json()
-
-        if (!isMounted) return
-        if (json && json.title) {
-          setData(json)
-        }
-      } catch {
-        // Keep fallback data
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchInfo()
-    return () => { isMounted = false }
-  }, [])
+  const data = initialData ?? defaultData
 
   return (
     <section id="contacto" className="py-20 md:py-28 bg-gradient-to-b from-[#FFF9F2] via-white to-[#FFF0F2]">

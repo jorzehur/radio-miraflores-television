@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { ExternalLink, Play, Radio, Volume2, VolumeX } from 'lucide-react'
@@ -51,46 +51,9 @@ const fallbackData: VideoRankingData = {
 }
 
 export default function VideoRankingSection({ initialData }: { initialData?: VideoRankingData | null }) {
-  const [data, setData] = useState<VideoRankingData>(initialData ?? fallbackData)
-  const [isLoading, setIsLoading] = useState(!initialData)
+  const data = initialData ?? fallbackData
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(true)
-
-  useEffect(() => {
-    if (initialData) return
-    let isMounted = true
-
-    async function fetchData() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-        const res = await fetch('/api/public/video-ranking', { signal: controller.signal })
-        clearTimeout(timeout)
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const json = await res.json()
-
-        if (!isMounted) return
-        if (json && Array.isArray(json.items) && json.items.length > 0) {
-          setData({
-            id: json.id || fallbackData.id,
-            subtitle: json.subtitle || fallbackData.subtitle,
-            title: json.title || fallbackData.title,
-            description: json.description || fallbackData.description,
-            ctaText: json.ctaText || fallbackData.ctaText,
-            ctaLink: json.ctaLink || fallbackData.ctaLink,
-            items: json.items,
-          })
-        }
-      } catch {
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchData()
-    return () => { isMounted = false }
-  }, [])
 
   const activeItems = useMemo(
     () => (data.items?.filter(item => item.active !== false).length ? data.items.filter(item => item.active !== false) : fallbackItems),
@@ -215,7 +178,7 @@ export default function VideoRankingSection({ initialData }: { initialData?: Vid
                 </div>
               </div>
               <p className="mt-4 text-sm font-medium text-gray-500">
-                {isLoading ? 'Cargando playlist...' : 'Autoplay continuo en mute por compatibilidad. El audio se activa con tu interacción.'}
+                Autoplay continuo en mute por compatibilidad. El audio se activa con tu interacción.
               </p>
             </div>
           </motion.div>

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Heart, Mic2, Radio, Headphones, Quote } from 'lucide-react'
@@ -59,41 +58,7 @@ const suitMap = ['♠', '♥', '♦', '♣']
 const suitColorMap = ['text-gray-800', 'text-red-600', 'text-red-600', 'text-gray-800']
 
 export default function NosotrosSection({ initialData }: { initialData?: NosotrosData | null }) {
-  const [data, setData] = useState<NosotrosData>(initialData ?? defaultData)
-  const [isLoading, setIsLoading] = useState(!initialData)
-
-  useEffect(() => {
-    if (initialData) return
-    let isMounted = true
-
-    async function fetchNosotros() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-
-        const res = await fetch('/api/public/nosotros', {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeout)
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const json = await res.json()
-
-        if (!isMounted) return
-        if (json && json.title) {
-          setData(json)
-        }
-      } catch {
-        // Keep fallback data
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchNosotros()
-    return () => { isMounted = false }
-  }, [])
+  const data = initialData ?? defaultData
 
   const cards = data.cards && data.cards.length > 0 ? data.cards : defaultCards
   const stats = [

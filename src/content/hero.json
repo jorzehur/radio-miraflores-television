@@ -1,0 +1,13 @@
+{
+  "id": "cmph2u5b90001tghsi7jc5yvf",
+  "title": "Radio Miraflores",
+  "titleHighlight": "Televisión",
+  "subtitle": "La estación musical que mueve tu mundo 🎸🔥",
+  "ctaPrimaryText": "Ver Ranking",
+  "ctaPrimaryLink": "#ranking",
+  "ctaSecondaryText": "Últimas Noticias",
+  "ctaSecondaryLink": "#noticias",
+  "backgroundImage": "/images/hero-radio-studio.png",
+  "overlayColor": "from-[#B3E5FC]/85 via-[#81D4FA]/75 to-[#4FC3F7]/90",
+  "updatedAt": "2026-05-22T15:30:59.302Z"
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
+import { useState, useRef, useEffect, useSyncExternalStore } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { ExternalLink, Heart, MessageCircle, Repeat2, Eye, EyeOff, ChevronDown, Radio } from 'lucide-react'
@@ -416,7 +416,6 @@ function renderPlatformEmbed(platform: string, embedUrl: string, isMounted: bool
 
 export default function RedesSection({ initialData }: { initialData?: RedesData | null }) {
   const [data, setData] = useState<RedesData>(initialData ?? defaultData)
-  const [isLoading, setIsLoading] = useState(!initialData)
   const [expandedSocials, setExpandedSocials] = useState<Record<string, boolean>>({})
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -432,39 +431,6 @@ export default function RedesSection({ initialData }: { initialData?: RedesData 
       [id]: !prev[id]
     }))
   }
-
-  useEffect(() => {
-    if (initialData) return
-    let isMounted = true
-
-    async function fetchRedes() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-
-        const res = await fetch('/api/public/redes', {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeout)
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const json = await res.json()
-
-        if (!isMounted) return
-        if (json && json.title) {
-          setData(json)
-        }
-      } catch {
-        // Keep fallback data
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchRedes()
-    return () => { isMounted = false }
-  }, [])
 
   const items = data.items && data.items.length > 0 ? data.items : defaultItems
 

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 
@@ -33,41 +32,7 @@ const defaultHero: HeroData = {
 }
 
 export default function HeroSection({ initialData }: { initialData?: HeroData | null }) {
-  const [hero, setHero] = useState<HeroData>(initialData ?? defaultHero)
-  const [isLoading, setIsLoading] = useState(!initialData)
-
-  useEffect(() => {
-    if (initialData) return
-    let isMounted = true
-
-    async function fetchHero() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-
-        const res = await fetch('/api/public/hero', {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeout)
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await res.json()
-
-        if (!isMounted) return
-        if (data && data.title) {
-          setHero(data)
-        }
-      } catch {
-        // Keep fallback data
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchHero()
-    return () => { isMounted = false }
-  }, [])
+  const hero = initialData ?? defaultHero
 
   // Parse overlay color classes - mapped to a premium light and vibrant theme by default
   const overlayClasses = hero.overlayColor && hero.overlayColor !== defaultHero.overlayColor

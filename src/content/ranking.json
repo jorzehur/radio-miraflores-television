@@ -1,0 +1,54 @@
+[
+  {
+    "id": "cmph2u5bs0002tghssudiqtsu",
+    "position": 1,
+    "song": "Bohemian Rhapsody",
+    "artist": "Queen",
+    "album": "A Night at the Opera",
+    "weeks": 12,
+    "trend": "up",
+    "imageUrl": null,
+    "active": true,
+    "createdAt": "2026-05-22T15:30:59.320Z",
+    "updatedAt": "2026-05-22T15:30:59.320Z"
+  },
+  {
+    "id": "cmph2u5bs0003tghsuxh46dnt",
+    "position": 2,
+    "song": "Hotel California",
+    "artist": "Eagles",
+    "album": "Hotel California",
+    "weeks": 8,
+    "trend": "up",
+    "imageUrl": null,
+    "active": true,
+    "createdAt": "2026-05-22T15:30:59.320Z",
+    "updatedAt": "2026-05-22T15:30:59.320Z"
+  },
+  {
+    "id": "cmph2u5bs0004tghsfmpitqgs",
+    "position": 3,
+    "song": "Stairway to Heaven",
+    "artist": "Led Zeppelin",
+    "album": "Led Zeppelin IV",
+    "weeks": 15,
+    "trend": "same",
+    "imageUrl": null,
+    "active": true,
+    "createdAt": "2026-05-22T15:30:59.320Z",
+    "updatedAt": "2026-05-22T15:30:59.320Z"
+  },
+  {
+    "id": "cmph2u5bs0005tghsox5dnr2v",
+    "position": 4,
+    "song": "Sweet Child O' Mine",
+    "artist": "Guns N' Roses",
+    "album": "Appetite for Destruction",
+    "weeks": 6,
+    "trend": "up",
+    "imageUrl": null,
+    "active": true,
+    "createdAt": "2026-05-22T15:30:59.320Z",
+    "updatedAt": "2026-05-22T15:30:59.320Z"
+  }
+]

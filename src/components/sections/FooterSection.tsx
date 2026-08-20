@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Heart, Radio, ArrowUp } from 'lucide-react'
@@ -82,56 +81,13 @@ export default function FooterSection({
   initialRedes?: RedSocial[] | null
   initialInfo?: InfoData | null
 }) {
-  const [footer, setFooter] = useState<FooterData>(initialFooter ?? defaultFooter)
-  const [redes, setRedes] = useState<RedSocial[]>(initialRedes ?? defaultRedes)
-  const [info, setInfo] = useState<InfoData>(initialInfo ?? defaultInfo)
+  const footer = initialFooter ?? defaultFooter
+  const redes = initialRedes ?? defaultRedes
+  const info = initialInfo ?? defaultInfo
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-
-  useEffect(() => {
-    if (initialFooter && initialRedes && initialInfo) return
-    let isMounted = true
-
-    async function fetchFooterData() {
-      try {
-        const [footerRes, redesRes, infoRes] = await Promise.all([
-          initialFooter ? null : fetch('/api/public/footer', { signal: AbortSignal.timeout(5000) }),
-          initialRedes ? null : fetch('/api/public/redes', { signal: AbortSignal.timeout(5000) }),
-          initialInfo ? null : fetch('/api/public/info', { signal: AbortSignal.timeout(5000) }),
-        ])
-
-        if (!isMounted) return
-
-        if (footerRes?.ok) {
-          const footerData = await footerRes.json()
-          if (footerData && footerData.description) {
-            setFooter(footerData)
-          }
-        }
-
-        if (redesRes?.ok) {
-          const redesData = await redesRes.json()
-          if (redesData?.items?.length > 0) {
-            setRedes(redesData.items)
-          }
-        }
-
-        if (infoRes?.ok) {
-          const infoData = await infoRes.json()
-          if (infoData && infoData.email) {
-            setInfo({ email: infoData.email, phone: infoData.phone, address: infoData.address })
-          }
-        }
-      } catch {
-        // Keep fallback data
-      }
-    }
-
-    fetchFooterData()
-    return () => { isMounted = false }
-  }, [])
 
   return (
     <footer className="relative overflow-hidden">

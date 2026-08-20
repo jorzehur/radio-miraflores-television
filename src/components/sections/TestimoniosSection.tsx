@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Quote, Star } from 'lucide-react'
@@ -71,41 +70,7 @@ const colorMap = [
 ]
 
 export default function TestimoniosSection({ initialData }: { initialData?: TestimoniosData | null }) {
-  const [data, setData] = useState<TestimoniosData>(initialData ?? defaultData)
-  const [isLoading, setIsLoading] = useState(!initialData)
-
-  useEffect(() => {
-    if (initialData) return
-    let isMounted = true
-
-    async function fetchTestimonios() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-
-        const res = await fetch('/api/public/testimonios', {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeout)
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const json = await res.json()
-
-        if (!isMounted) return
-        if (json && json.title) {
-          setData(json)
-        }
-      } catch {
-        // Keep fallback data
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchTestimonios()
-    return () => { isMounted = false }
-  }, [])
+  const data = initialData ?? defaultData
 
   const items = data.items && data.items.length > 0 ? data.items : defaultItems
 

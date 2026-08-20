@@ -1,0 +1,111 @@
+{
+  "id": "cmpmv1puf0000tgfshnuvo6lr",
+  "subtitle": "Ranking en video",
+  "title": "Video Ranking",
+  "description": "Una programacion continua con los videos de YouTube que mas suenan en Radio Miraflores",
+  "ctaText": "Abrir canal en YouTube",
+  "ctaLink": "https://www.youtube.com/@RADIOMIRAFLORESTELEVISION",
+  "updatedAt": "2026-05-26T16:39:32.631Z",
+  "items": [
+    {
+      "id": "cmpmv1pv10001tgfsx2g8t0ag",
+      "title": "Bohemian Rhapsody",
+      "artist": "Queen",
+      "youtubeUrl": "https://www.youtube.com/watch?v=FlxE6jROiGI",
+      "videoId": "FlxE6jROiGI",
+      "thumbnailUrl": "https://i.ytimg.com/vi/FlxE6jROiGI/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "cmpmv1pv10002tgfs90wbbpt3",
+      "title": "Hotel California",
+      "artist": "Eagles",
+      "youtubeUrl": "https://www.youtube.com/watch?v=BciS5krYL80",
+      "videoId": "BciS5krYL80",
+      "thumbnailUrl": "https://i.ytimg.com/vi/BciS5krYL80/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 2
+    },
+    {
+      "id": "cmpmv1pv10003tgfsl8cangcz",
+      "title": "Stairway to Heaven",
+      "artist": "Led Zeppelin",
+      "youtubeUrl": "https://www.youtube.com/watch?v=QkF3oxziUI4",
+      "videoId": "QkF3oxziUI4",
+      "thumbnailUrl": "https://i.ytimg.com/vi/QkF3oxziUI4/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 3
+    },
+    {
+      "id": "cmpmv1pv10004tgfs9qojktjl",
+      "title": "Sweet Child O Mine",
+      "artist": "Guns N Roses",
+      "youtubeUrl": "https://www.youtube.com/watch?v=1w7OgIMMRc4",
+      "videoId": "1w7OgIMMRc4",
+      "thumbnailUrl": "https://i.ytimg.com/vi/1w7OgIMMRc4/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 4
+    },
+    {
+      "id": "cmpmv1pv10005tgfsuwq2wv41",
+      "title": "Smells Like Teen Spirit",
+      "artist": "Nirvana",
+      "youtubeUrl": "https://www.youtube.com/watch?v=hTWKbfoikeg",
+      "videoId": "hTWKbfoikeg",
+      "thumbnailUrl": "https://i.ytimg.com/vi/hTWKbfoikeg/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 5
+    },
+    {
+      "id": "cmpmv1pv10006tgfswrnoct8i",
+      "title": "November Rain",
+      "artist": "Guns N Roses",
+      "youtubeUrl": "https://www.youtube.com/watch?v=8SbUC-UaAxE",
+      "videoId": "8SbUC-UaAxE",
+      "thumbnailUrl": "https://i.ytimg.com/vi/8SbUC-UaAxE/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 6
+    },
+    {
+      "id": "cmpmv1pv10007tgfsdasdfiax",
+      "title": "Livin on a Prayer",
+      "artist": "Bon Jovi",
+      "youtubeUrl": "https://www.youtube.com/watch?v=lDK9QqIzhwk",
+      "videoId": "lDK9QqIzhwk",
+      "thumbnailUrl": "https://i.ytimg.com/vi/lDK9QqIzhwk/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 7
+    },
+    {
+      "id": "cmpmv1pv10008tgfsdx55zq9a",
+      "title": "Zombie",
+      "artist": "The Cranberries",
+      "youtubeUrl": "https://www.youtube.com/watch?v=6Ejga4kJUts",
+      "videoId": "6Ejga4kJUts",
+      "thumbnailUrl": "https://i.ytimg.com/vi/6Ejga4kJUts/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 8
+    },
+    {
+      "id": "cmpmv1pv10009tgfsjlas32x5",
+      "title": "Enter Sandman",
+      "artist": "Metallica",
+      "youtubeUrl": "https://www.youtube.com/watch?v=CD-E-LDc384",
+      "videoId": "CD-E-LDc384",
+      "thumbnailUrl": "https://i.ytimg.com/vi/CD-E-LDc384/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 9
+    },
+    {
+      "id": "cmpmv1pv1000atgfswpp1i5jl",
+      "title": "With or Without You",
+      "artist": "U2",
+      "youtubeUrl": "https://www.youtube.com/watch?v=XmSdTa9kaiQ",
+      "videoId": "XmSdTa9kaiQ",
+      "thumbnailUrl": "https://i.ytimg.com/vi/XmSdTa9kaiQ/hqdefault.jpg",
+      "active": true,
+      "sortOrder": 10
+    }
+  ]
+}

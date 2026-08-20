@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Music, Trophy, TrendingUp, Flame } from 'lucide-react'
@@ -43,44 +42,7 @@ const cardVariants = {
 }
 
 export default function RankingSection({ initialData }: { initialData?: RankingItem[] | null }) {
-  const [ranking, setRanking] = useState<RankingItem[]>(initialData ?? fallbackRanking)
-  const [isLoading, setIsLoading] = useState(!initialData)
-
-  useEffect(() => {
-    if (initialData) return
-    let isMounted = true
-
-    async function fetchRanking() {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
-
-        const res = await fetch('/api/public/ranking', {
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeout)
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await res.json()
-
-        if (!isMounted) return
-        if (Array.isArray(data) && data.length > 0) {
-          const hasData = data.some((i: RankingItem) => i.song && i.song.length > 0)
-          if (hasData) {
-            setRanking(data)
-          }
-        }
-      } catch {
-        // Keep fallback data
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchRanking()
-    return () => { isMounted = false }
-  }, [])
+  const ranking = initialData ?? fallbackRanking
 
   const displayData = ranking.slice(0, 4)
 

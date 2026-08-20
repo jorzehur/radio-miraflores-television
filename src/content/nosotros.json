@@ -1,0 +1,61 @@
+{
+  "id": "cmph2u5c60006tghs9gidgvqe",
+  "subtitle": "Nuestra Historia",
+  "title": "Nosotros",
+  "description": "Décadas de rock, pasión y música que conecta corazones",
+  "stat1Value": "39+",
+  "stat1Label": "Años al aire",
+  "stat2Value": "50K+",
+  "stat2Label": "Oyentes",
+  "stat3Value": "100+",
+  "stat3Label": "Programas",
+  "stat4Value": "∞",
+  "stat4Label": "Pasión rockera",
+  "updatedAt": "2026-05-22T15:30:59.335Z",
+  "cards": [
+    {
+      "id": "cmph2u5cq0007tghsvwkrz7ex",
+      "year": "1985",
+      "title": "Los Inicios",
+      "description": "Donde todo comenzó. Una pequeña cabina con grandes sueños y la pasión por el rock que nos unió.",
+      "imageUrl": "/images/nosotros-80s.png",
+      "icon": "radio",
+      "sortOrder": 1,
+      "active": true,
+      "updatedAt": "2026-05-22T15:30:59.354Z"
+    },
+    {
+      "id": "cmph2u5cq0008tghsvg83viax",
+      "year": "1995",
+      "title": "La Evolución",
+      "description": "La tecnología cambió, pero nuestra esencia rockera se mantuvo firme. Llegamos a más oyentes con nueva energía.",
+      "imageUrl": "/images/nosotros-90s.png",
+      "icon": "mic",
+      "sortOrder": 2,
+      "active": true,
+      "updatedAt": "2026-05-22T15:30:59.354Z"
+    },
+    {
+      "id": "cmph2u5cq0009tghsx7vjat6v",
+      "year": "2010",
+      "title": "Era Digital",
+      "description": "La revolución digital nos impulsó al mundo entero. Streaming, podcasts y más rock para todos.",
+      "imageUrl": "/images/nosotros-2000s.png",
+      "icon": "headphones",
+      "sortOrder": 3,
+      "active": true,
+      "updatedAt": "2026-05-22T15:30:59.354Z"
+    },
+    {
+      "id": "cmph2u5cq000atghsap9s7ba0",
+      "year": "2024",
+      "title": "Hoy",
+      "description": "Más fuertes que nunca. Conectando generaciones a través de la música que nos define.",
+      "imageUrl": "/images/nosotros-2020s.png",
+      "icon": "heart",
+      "sortOrder": 4,
+      "active": true,
+      "updatedAt": "2026-05-22T15:30:59.354Z"
+    }
+  ]
+}

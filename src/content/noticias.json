@@ -1,0 +1,49 @@
+{
+  "id": "cmph2u5d3000btghsi067d1y5",
+  "subtitle": "Últimas Noticias",
+  "title": "Noticias",
+  "description": "Mantente informado de todo lo que pasa en el mundo del rock",
+  "maxVisible": 2,
+  "updatedAt": "2026-05-22T15:30:59.367Z",
+  "items": [
+    {
+      "id": "cmph2u5dg000ctghs2lg76df6",
+      "title": "Dia del Vino",
+      "excerpt": "",
+      "content": "",
+      "imageUrl": null,
+      "author": "Radio Miraflores TV",
+      "facebookEmbedUrl": "https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fradiomiraflorestelevision%2Fposts%2Fpfbid02uRk3eRAGLoSpX6DtULxF9d7PtFTkynQkyonRf7vwguCGoWo9qAXwn41a9Qdv3vvyl&show_text=true&width=500",
+      "published": true,
+      "sortOrder": 1,
+      "createdAt": "2026-05-22T15:30:59.380Z",
+      "updatedAt": "2026-05-22T15:30:59.380Z"
+    },
+    {
+      "id": "cmph2u5dg000dtghslxkg0f5z",
+      "title": "¡Estreno exclusivo! Entrevista con la banda de rock alternativo del momento",
+      "excerpt": "Esta noche a las 8:00 PM estrenamos entrevista exclusiva con la banda de rock alternativo que está revolucionando la escena musical. Prepárate para una noche llena de rock en vivo y sorpresas. ¡Sintoniza! #RockEnVivo #RadioMiraflores",
+      "content": "Esta noche a las 8:00 PM estrenamos entrevista exclusiva con la banda de rock alternativo que está revolucionando la escena musical. Prepárate para una noche llena de rock en vivo y sorpresas. ¡Sintoniza! #RockEnVivo #RadioMiraflores",
+      "imageUrl": "/images/hero-radio-studio.png",
+      "author": "Radio Miraflores TV",
+      "facebookEmbedUrl": null,
+      "published": false,
+      "sortOrder": 2,
+      "createdAt": "2026-05-22T15:30:59.380Z",
+      "updatedAt": "2026-05-22T19:28:13.151Z"
+    },
+    {
+      "id": "cmph2u5dg000etghspfz1k8rw",
+      "title": "¡Nuevo líder del Ranking Internacional! Bohemian Rhapsody vuelve al #1",
+      "excerpt": "«Bohemian Rhapsody» de Queen vuelve a coronarse en el #1 de nuestro Ranking Internacional de Rock. ¿Estás de acuerdo con esta posición? ¡Comenta y comparte tu opinión! #RankingRock #Queen",
+      "content": "«Bohemian Rhapsody» de Queen vuelve a coronarse en el #1 de nuestro Ranking Internacional de Rock. ¿Estás de acuerdo con esta posición? ¡Comenta y comparte tu opinión! #RankingRock #Queen",
+      "imageUrl": "/images/hero-video-thumb.png",
+      "author": "Radio Miraflores TV",
+      "facebookEmbedUrl": null,
+      "published": false,
+      "sortOrder": 3,
+      "createdAt": "2026-05-22T15:30:59.380Z",
+      "updatedAt": "2026-05-22T19:28:13.149Z"
+    }
+  ]
+}
