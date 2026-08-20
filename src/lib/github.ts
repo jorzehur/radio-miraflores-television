@@ -55,6 +55,33 @@ export async function commitFile(path: string, content: string, message: string)
   }
 }
 
+export async function commitBinaryFile(path: string, base64Content: string, message: string): Promise<boolean> {
+  if (!GITHUB_TOKEN) {
+    console.error('GITHUB_TOKEN no configurado')
+    return false
+  }
+
+  try {
+    const sha = await getFileSha(path)
+    const body: Record<string, string> = {
+      message,
+      content: base64Content,
+      branch: GITHUB_BRANCH,
+    }
+    if (sha) body.sha = sha
+
+    const res = await githubApi(path, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    })
+
+    return res.ok
+  } catch (error) {
+    console.error('Error al hacer commit binario:', error)
+    return false
+  }
+}
+
 export async function deleteFile(path: string, message: string): Promise<boolean> {
   if (!GITHUB_TOKEN) {
     console.error('GITHUB_TOKEN no configurado')

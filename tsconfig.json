@@ -37,9 +37,10 @@
      ".next/dev/types/**/*.ts"
    ],
 "exclude": [
-      "node_modules",
-      "public/videos/ranking/**/*",
-      "examples",
-      "skills"
-    ]
+       "node_modules",
+       "public/videos/ranking/**/*",
+       "examples",
+       "skills",
+       "scripts"
+     ]
 }
